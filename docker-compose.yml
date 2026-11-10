@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    container_name: localai-postgres
+    environment:
+      POSTGRES_USER: localai
+      POSTGRES_PASSWORD: localai
+      POSTGRES_DB: localai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+
+  redis:
+    image: redis:7
+    container_name: localai-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:

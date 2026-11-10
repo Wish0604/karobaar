@@ -1,0 +1,20 @@
+{
+  "name": "paytm-localai",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:ai\" \"npm:dev:web\"",
+    "dev:backend": "npm --workspace apps/backend run dev",
+    "dev:ai": "npm --workspace apps/ai-service run dev",
+    "dev:web": "npm --workspace apps/web run dev",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
