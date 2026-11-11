@@ -19,14 +19,34 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
   const currentHeroTimeRef = useRef(0);
   const currentStoryTimeRef = useRef(0);
 
+  const isHeroSeekingRef = useRef(false);
+  const isStorySeekingRef = useRef(false);
+  const heroSeekTimeoutRef = useRef<number | null>(null);
+  const storySeekTimeoutRef = useRef<number | null>(null);
+
   const rafScrollRef = useRef<number>(0);
   const rafSmoothRef = useRef<number>(0);
 
-  // Helper to seek video safely without audio hitching
-  const seekVideo = (video: HTMLVideoElement | null, targetTime: number) => {
+  // Helper to seek video safely without media pipeline stalling or network abort loops
+  const seekVideo = (
+    video: HTMLVideoElement | null,
+    targetTime: number,
+    isSeekingRef: React.MutableRefObject<boolean>,
+    seekTimeoutRef: React.MutableRefObject<number | null>
+  ) => {
     if (!video || !video.duration || isNaN(targetTime)) return;
+    // Prevent continuous seek cancellation loops over remote networks
+    if (video.seeking || isSeekingRef.current) return;
+
     const clamped = Math.max(0, Math.min(video.duration - 0.05, targetTime));
     if (Math.abs(video.currentTime - clamped) > 0.02) {
+      isSeekingRef.current = true;
+      if (seekTimeoutRef.current) window.clearTimeout(seekTimeoutRef.current);
+      // Failsafe timeout to prevent seeking lock if seeked event is delayed
+      seekTimeoutRef.current = window.setTimeout(() => {
+        isSeekingRef.current = false;
+      }, 120);
+
       if ("fastSeek" in video && typeof (video as any).fastSeek === "function") {
         try {
           (video as any).fastSeek(clamped);
@@ -52,7 +72,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
         const diff = targetHeroTimeRef.current - currentHeroTimeRef.current;
         if (Math.abs(diff) > 0.008) {
           currentHeroTimeRef.current += diff * 0.22;
-          seekVideo(heroVideo, currentHeroTimeRef.current);
+          seekVideo(heroVideo, currentHeroTimeRef.current, isHeroSeekingRef, heroSeekTimeoutRef);
         }
       }
 
@@ -62,7 +82,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
         const diff = targetStoryTimeRef.current - currentStoryTimeRef.current;
         if (Math.abs(diff) > 0.008) {
           currentStoryTimeRef.current += diff * 0.15;
-          seekVideo(storyVideo, currentStoryTimeRef.current);
+          seekVideo(storyVideo, currentStoryTimeRef.current, isStorySeekingRef, storySeekTimeoutRef);
         }
       }
 
@@ -74,6 +94,8 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
     return () => {
       active = false;
       cancelAnimationFrame(rafSmoothRef.current);
+      if (heroSeekTimeoutRef.current) window.clearTimeout(heroSeekTimeoutRef.current);
+      if (storySeekTimeoutRef.current) window.clearTimeout(storySeekTimeoutRef.current);
     };
   }, []);
 
@@ -121,6 +143,42 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
       window.removeEventListener("resize", handleScroll);
       if (rafScrollRef.current) cancelAnimationFrame(rafScrollRef.current);
     };
+  }, [handleScroll]);
+
+  // Warm up hardware video decoders and ensure frame 0 renders immediately
+  useEffect(() => {
+    const warmUp = (video: HTMLVideoElement | null) => {
+      if (!video) return;
+      video.muted = true;
+      video.playsInline = true;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            video.pause();
+          })
+          .catch(() => {
+            // Autoplay policy fallback
+          });
+      }
+    };
+
+    warmUp(heroVideoRef.current);
+    warmUp(storyVideoRef.current);
+  }, []);
+
+  const handleHeroReady = useCallback(() => {
+    handleScroll();
+    const video = heroVideoRef.current;
+    if (video && video.duration && video.currentTime === 0) {
+      try {
+        video.currentTime = 0.001;
+      } catch {}
+    }
+  }, [handleScroll]);
+
+  const handleStoryReady = useCallback(() => {
+    handleScroll();
   }, [handleScroll]);
 
   // Video Crossfade:
@@ -212,9 +270,32 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
       >
         {/* ── FIXED PRESENTATION FRAME (Anchored to Viewport) ── */}
         <div className="landing-fixed-stage">
+          {/* 0. Fallback Poster Backdrops (Instant rendering, zero black-screen flicker) */}
+          <img
+            src="/karobaar_assemble_poster.jpg"
+            alt="Karobaar Assemble"
+            aria-hidden="true"
+            className="stage-bg-poster hero-poster"
+            style={{
+              opacity: heroOpacity,
+              zIndex: 0,
+            }}
+          />
+          <img
+            src="/karobaar_story_poster.jpg"
+            alt="Karobaar Story"
+            aria-hidden="true"
+            className="stage-bg-poster story-poster"
+            style={{
+              opacity: storyOpacity,
+              zIndex: 0,
+            }}
+          />
+
           {/* 1. Hero Assemble Video (3D purple logo -> marketplace) */}
           <video
             ref={heroVideoRef}
+            src="/karobaar_assemble_hero.mp4"
             className="stage-bg-video hero-video"
             style={{
               opacity: heroOpacity,
@@ -222,8 +303,14 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
             }}
             muted
             playsInline
+            autoPlay
             preload="auto"
             poster="/karobaar_assemble_poster.jpg"
+            onLoadedMetadata={handleHeroReady}
+            onCanPlay={handleHeroReady}
+            onSeeked={() => {
+              isHeroSeekingRef.current = false;
+            }}
           >
             <source src="/karobaar_assemble_hero.mp4" type="video/mp4" />
           </video>
@@ -231,6 +318,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
           {/* 2. Marketplace Story Video (Full continuous visual journey to end) */}
           <video
             ref={storyVideoRef}
+            src="/karobaar_story_scroll.mp4"
             className="stage-bg-video story-video"
             style={{
               opacity: storyOpacity,
@@ -238,8 +326,14 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
             }}
             muted
             playsInline
+            autoPlay
             preload="auto"
             poster="/karobaar_story_poster.jpg"
+            onLoadedMetadata={handleStoryReady}
+            onCanPlay={handleStoryReady}
+            onSeeked={() => {
+              isStorySeekingRef.current = false;
+            }}
           >
             <source src="/karobaar_story_scroll.mp4" type="video/mp4" />
           </video>
