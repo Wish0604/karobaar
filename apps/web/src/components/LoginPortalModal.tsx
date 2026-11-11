@@ -79,6 +79,9 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
     };
   }, []);
 
+  // Login form state (unified phone number for registered users)
+  const [loginPhone, setLoginPhone] = useState("9876543210");
+
   // Merchant form state
   const [merchantPhone, setMerchantPhone] = useState("9876543210");
   const [storeName, setStoreName] = useState("Rajesh Kirana & Store");
@@ -97,7 +100,33 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const getPhoneNumber = () => activeRole === "merchant" ? merchantPhone : customerPhone;
+  const getPhoneNumber = () => {
+    if (activeTab === "login") {
+      return loginPhone;
+    }
+    return activeRole === "merchant" ? merchantPhone : customerPhone;
+  };
+
+  // Automatically resolve role and profile for registered phone numbers
+  const resolveUserForLogin = (phone: string): { role: "merchant" | "customer"; profile?: any } => {
+    try {
+      const stored = localStorage.getItem("karobaar_registered_users");
+      if (stored) {
+        const users = JSON.parse(stored);
+        if (users[phone]) {
+          return { role: users[phone].role, profile: users[phone] };
+        }
+      }
+    } catch {}
+
+    // Customer demo phone numbers
+    if (phone === "9123456780" || phone.startsWith("9123")) {
+      return { role: "customer" };
+    }
+
+    // Default to initialRole or merchant
+    return { role: initialRole || "merchant" };
+  };
 
   const buildDemoSession = (role: "merchant" | "customer"): UserSession => {
     if (role === "merchant") {
@@ -163,40 +192,63 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
     setIsSubmitting(true);
 
     try {
+      const phone = getPhoneNumber();
+      const resolved = activeTab === "login"
+        ? resolveUserForLogin(phone)
+        : { role: activeRole, profile: undefined };
+
+      const effectiveRole = resolved.role;
+      const userProfile = resolved.profile;
+
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           otpSessionId: otpSessionId || "demo-session",
           otp: otpCode,
-          role: activeRole,
+          role: effectiveRole,
         }),
       });
 
-      const data = await response.json();
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.error?.message ?? "OTP verification failed.");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok && data?.error?.message) {
+        throw new Error(data.error.message);
       }
 
       const apiUser = data?.data?.user ?? {};
       const finalSession: UserSession = {
-        role: activeRole,
-        userId: apiUser.id ?? (activeRole === "merchant" ? "m_rajesh_01" : "c_priya_01"),
-        name: activeRole === "merchant"
+        role: effectiveRole,
+        userId: apiUser.id ?? (effectiveRole === "merchant" ? "m_rajesh_01" : "c_priya_01"),
+        name: userProfile?.name ?? (effectiveRole === "merchant"
           ? (storeName || "Rajesh Kumar")
-          : (customerName || "Priya Sharma"),
-        phone: `+91 ${getPhoneNumber()}`,
-        ...(activeRole === "merchant"
+          : (customerName || "Priya Sharma")),
+        phone: `+91 ${phone}`,
+        ...(effectiveRole === "merchant"
           ? {
-              storeName: storeName || "Rajesh Kirana",
-              category: businessCategory,
-              location: merchantCity,
+              storeName: userProfile?.storeName || storeName || "Rajesh Kirana",
+              category: userProfile?.category || businessCategory,
+              location: userProfile?.location || merchantCity,
             }
           : {
-              location: customerLocation || "Indiranagar, Bengaluru",
+              location: userProfile?.location || customerLocation || "Indiranagar, Bengaluru",
             }),
-        token: data?.data?.accessToken ?? (activeRole === "merchant" ? "merchant_token_jwt" : "customer_token_jwt"),
+        token: data?.data?.accessToken ?? (effectiveRole === "merchant" ? "merchant_token_jwt" : "customer_token_jwt"),
       };
+
+      // Remember registration so subsequent logins automatically know role & profile
+      if (activeTab === "create") {
+        try {
+          const existing = JSON.parse(localStorage.getItem("karobaar_registered_users") || "{}");
+          existing[phone] = {
+            role: effectiveRole,
+            name: finalSession.name,
+            storeName: finalSession.storeName,
+            category: finalSession.category,
+            location: finalSession.location,
+          };
+          localStorage.setItem("karobaar_registered_users", JSON.stringify(existing));
+        } catch {}
+      }
 
       const isAccountCreation = activeTab === "create";
       onLoginSuccess(finalSession, isAccountCreation);
@@ -281,14 +333,22 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
             <button
               type="button"
               className={`login-tab ${activeTab === "login" ? "active" : ""}`}
-              onClick={() => setActiveTab("login")}
+              onClick={() => {
+                setActiveTab("login");
+                setOtpSent(false);
+                setFormError("");
+              }}
             >
               Login
             </button>
             <button
               type="button"
               className={`login-tab ${activeTab === "create" ? "active" : ""}`}
-              onClick={() => setActiveTab("create")}
+              onClick={() => {
+                setActiveTab("create");
+                setOtpSent(false);
+                setFormError("");
+              }}
             >
               Create Account
             </button>
@@ -297,55 +357,63 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
           {/* Card Header */}
           <div className="login-header-section">
             <h1 className="login-heading">
-              Welcome to <span className="heading-hindi">कारोबार</span>
+              {activeTab === "login" ? (
+                <>Welcome to <span className="heading-hindi">कारोबार</span></>
+              ) : (
+                <>Create <span className="heading-hindi">कारोबार</span> Account</>
+              )}
             </h1>
             <p className="login-subheading">
-              Login to shop, sell, and grow your business.
+              {activeTab === "login"
+                ? "Login with your mobile number to continue."
+                : "Select your account type to register your business or start shopping."}
             </p>
           </div>
 
-          {/* Role Selector */}
-          <div className="role-switch-grid">
-            <button
-              type="button"
-              className={`role-tab-btn ${activeRole === "merchant" ? "selected" : ""}`}
-              onClick={() => {
-                setActiveRole("merchant");
-                setOtpSent(false);
-              }}
-            >
-              <div className="role-tab-inner">
-                <span className="role-icon-box">🏪</span>
-                <div className="role-info">
-                  <span className="role-title">Merchant</span>
-                  <span className="role-desc">(व्यापारी)</span>
+          {/* Role Selector — ONLY for registration (Create Account), removed from Login */}
+          {activeTab === "create" && (
+            <div className="role-switch-grid">
+              <button
+                type="button"
+                className={`role-tab-btn ${activeRole === "merchant" ? "selected" : ""}`}
+                onClick={() => {
+                  setActiveRole("merchant");
+                  setOtpSent(false);
+                }}
+              >
+                <div className="role-tab-inner">
+                  <span className="role-icon-box">🏪</span>
+                  <div className="role-info">
+                    <span className="role-title">Merchant</span>
+                    <span className="role-desc">(व्यापारी)</span>
+                  </div>
                 </div>
-              </div>
-              {activeRole === "merchant" && (
-                <span className="role-check-mark">✓</span>
-              )}
-            </button>
+                {activeRole === "merchant" && (
+                  <span className="role-check-mark">✓</span>
+                )}
+              </button>
 
-            <button
-              type="button"
-              className={`role-tab-btn ${activeRole === "customer" ? "selected" : ""}`}
-              onClick={() => {
-                setActiveRole("customer");
-                setOtpSent(false);
-              }}
-            >
-              <div className="role-tab-inner">
-                <span className="role-icon-box">🛒</span>
-                <div className="role-info">
-                  <span className="role-title">Customer</span>
-                  <span className="role-desc">(ग्राहक)</span>
+              <button
+                type="button"
+                className={`role-tab-btn ${activeRole === "customer" ? "selected" : ""}`}
+                onClick={() => {
+                  setActiveRole("customer");
+                  setOtpSent(false);
+                }}
+              >
+                <div className="role-tab-inner">
+                  <span className="role-icon-box">🛒</span>
+                  <div className="role-info">
+                    <span className="role-title">Customer</span>
+                    <span className="role-desc">(ग्राहक)</span>
+                  </div>
                 </div>
-              </div>
-              {activeRole === "customer" && (
-                <span className="role-check-mark">✓</span>
-              )}
-            </button>
-          </div>
+                {activeRole === "customer" && (
+                  <span className="role-check-mark">✓</span>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Phone Input + OTP Section */}
           <div className="login-form-section">
@@ -423,18 +491,27 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
 
                 {/* Phone Number Input */}
                 <div className="form-group">
+                  <label htmlFor="phone-input">
+                    {activeTab === "login" ? "Mobile Number" : "Mobile Number for Verification"}
+                  </label>
                   <div className="phone-input-wrapper">
                     <span className="country-code">+91</span>
                     <input
+                      id="phone-input"
                       type="tel"
                       maxLength={10}
-                      value={activeRole === "merchant" ? merchantPhone : customerPhone}
-                      onChange={(e) =>
-                        activeRole === "merchant"
-                          ? setMerchantPhone(e.target.value)
-                          : setCustomerPhone(e.target.value)
-                      }
-                      placeholder="Enter mobile number"
+                      value={activeTab === "login" ? loginPhone : (activeRole === "merchant" ? merchantPhone : customerPhone)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (activeTab === "login") {
+                          setLoginPhone(val);
+                        } else if (activeRole === "merchant") {
+                          setMerchantPhone(val);
+                        } else {
+                          setCustomerPhone(val);
+                        }
+                      }}
+                      placeholder="Enter 10-digit mobile number"
                       required
                     />
                   </div>
@@ -446,7 +523,11 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                   className="btn-otp-submit"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Sending OTP..." : "Continue with OTP →"}
+                  {isSubmitting
+                    ? "Sending OTP..."
+                    : activeTab === "create"
+                    ? "Register with OTP →"
+                    : "Continue with OTP →"}
                 </button>
               </form>
             ) : (
@@ -480,12 +561,14 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
 
                 <button
                   type="submit"
-                  className={`btn-otp-submit ${activeRole === "customer" ? "btn-customer" : ""}`}
+                  className={`btn-otp-submit ${activeTab === "create" && activeRole === "customer" ? "btn-customer" : ""}`}
                   disabled={isSubmitting}
                 >
                   {isSubmitting
                     ? "Authenticating..."
-                    : `Enter ${activeRole === "merchant" ? "Merchant" : "Customer"} Portal →`}
+                    : activeTab === "create"
+                    ? `Complete ${activeRole === "merchant" ? "Merchant" : "Customer"} Registration →`
+                    : "Login to Karobaar →"}
                 </button>
               </form>
             )}
@@ -505,14 +588,41 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
             <button
               type="button"
               className="btn-voice-login"
-              onClick={activeRole === "merchant" ? handleInstantMerchantDemo : handleInstantCustomerDemo}
+              onClick={activeTab === "login"
+                ? (resolveUserForLogin(loginPhone).role === "customer" ? handleInstantCustomerDemo : handleInstantMerchantDemo)
+                : (activeRole === "merchant" ? handleInstantMerchantDemo : handleInstantCustomerDemo)}
             >
               <span className="voice-mic-icon">🎙️</span>
               <div className="voice-login-text">
                 <strong>Continue with Voice</strong>
-                <small>(आवाज़ से लॉगिन करें)</small>
+                <small>(आवाज़ से {activeTab === "create" ? "रजिस्टर" : "लॉगिन"} करें)</small>
               </div>
             </button>
+
+            {/* Quick 1-click Demo Evaluation (on Login) */}
+            {activeTab === "login" && (
+              <div className="login-quick-demo-links">
+                <span className="quick-demo-label">Instant Demo Evaluation:</span>
+                <div className="quick-demo-btns">
+                  <button
+                    type="button"
+                    className="btn-quick-chip"
+                    onClick={handleInstantMerchantDemo}
+                    title="Directly enter Merchant Portal"
+                  >
+                    🏪 Demo Merchant
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-quick-chip"
+                    onClick={handleInstantCustomerDemo}
+                    title="Directly enter Customer Portal"
+                  >
+                    🛒 Demo Customer
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Trust Badges */}
             <div className="login-trust-badges">

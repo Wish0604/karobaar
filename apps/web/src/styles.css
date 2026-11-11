@@ -915,6 +915,52 @@ input::placeholder {
   color: #64748b;
 }
 
+/* Quick Demo Links (Login Tab) */
+.login-quick-demo-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 2px 0;
+}
+
+.quick-demo-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.02em;
+}
+
+.quick-demo-btns {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-quick-chip {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 9px;
+  cursor: pointer;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-quick-chip:hover {
+  background: rgba(235, 245, 255, 0.85);
+  border-color: #003366;
+  color: #003366;
+  transform: translateY(-1px);
+}
+
 /* Trust Badges */
 .login-trust-badges {
   display: flex;
