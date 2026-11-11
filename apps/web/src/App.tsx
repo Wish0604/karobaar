@@ -105,6 +105,7 @@ export function App() {
           onLogout={handleLogout}
           onReplayIntro={() => setShowReplayModal(true)}
           onOpenOnboarding={() => setCurrentView("onboarding")}
+          onSwitchToCustomer={() => setCurrentView("customer")}
         />
       )}
 
