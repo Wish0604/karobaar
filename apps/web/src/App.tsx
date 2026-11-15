@@ -6,6 +6,7 @@ import { LoginPortalModal } from "./components/LoginPortalModal";
 import { MerchantOnboarding } from "./portals/MerchantOnboarding";
 import { MerchantPortal } from "./portals/MerchantPortal";
 import { CustomerPortal } from "./portals/CustomerPortal";
+import { OneSignalPush } from "./components/OneSignalPush";
 
 export function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => {
@@ -71,6 +72,9 @@ export function App() {
 
   return (
     <>
+      {/* Web push notifications (inert until VITE_ONESIGNAL_APP_ID is set) */}
+      <OneSignalPush userId={session?.userId ?? null} role={session?.role ?? null} />
+
       {/* 1. SCROLL-ANIMATED INTRO VIDEO LANDING PAGE */}
       {currentView === "intro" && (
         <ScrollVideoLanding

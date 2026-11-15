@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { db } from "./store.js";
+import { sendPush } from "./services/onesignal.js";
 
 const app = express();
 const port = Number(process.env.BACKEND_PORT || 4000);
@@ -163,6 +164,14 @@ app.post("/api/v1/reservations/:id/confirm", (req, res) => {
   product.quantity -= reservation.quantity;
   reservation.status = "confirmed";
 
+  // Notify the customer that their reservation is confirmed
+  void sendPush({
+    externalIds: [`customer_${reservation.customerId}`],
+    heading: "Reservation confirmed ✅",
+    content: `${product.name} × ${reservation.quantity} is confirmed — ready for pickup at the store.`,
+    data: { type: "reservation_confirmed", reservationId: reservation.id, productId: product.id },
+  });
+
   res.json({ success: true, data: reservation });
 });
 
@@ -176,15 +185,29 @@ app.post("/api/v1/orders", (req, res) => {
     return sum + (product ? product.price * item.quantity : 0);
   }, 0);
 
-  res.status(201).json({
-    success: true,
-    data: {
-      id: `ord_${Date.now()}`,
-      status: "created",
-      total,
-      items: parsed.data.items
-    }
-  });
+  const order = {
+    id: `ord_${Date.now()}`,
+    status: "created" as const,
+    total,
+    items: parsed.data.items
+  };
+
+  // Notify every merchant whose products are in this order
+  const businessIds = [...new Set(parsed.data.items.flatMap((item) => {
+    const product = db.products.find((p) => p.id === item.productId);
+    return product ? [product.businessId] : [];
+  }))];
+  const itemCount = parsed.data.items.reduce((sum, item) => sum + item.quantity, 0);
+  for (const businessId of businessIds) {
+    void sendPush({
+      externalIds: [`merchant_${businessId}`],
+      heading: "New Order! 🛒",
+      content: `Order #${order.id} — ${itemCount} item${itemCount === 1 ? "" : "s"}, ₹${total}`,
+      data: { type: "new_order", orderId: order.id, total, itemCount },
+    });
+  }
+
+  res.status(201).json({ success: true, data: order });
 });
 
 app.post("/api/v1/payments/create", (req, res) => {
