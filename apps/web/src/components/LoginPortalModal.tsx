@@ -388,33 +388,6 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
     }
   };
 
-  // Instant 1-click Demo Logins for smooth evaluation
-  const handleInstantMerchantDemo = () => {
-    onLoginSuccess({
-      role: "merchant",
-      userId: "m_rajesh_01",
-      name: "Rajesh Kumar",
-      phone: "+91 9876543210",
-      email: "rajesh.karobaar@gmail.com",
-      storeName: "Rajesh Kirana & General Store",
-      category: "Grocery & FMCG",
-      location: "Indiranagar, Bengaluru",
-      token: "demo_merchant_token",
-    });
-  };
-
-  const handleInstantCustomerDemo = () => {
-    onLoginSuccess({
-      role: "customer",
-      userId: "c_priya_01",
-      name: "Priya Sharma",
-      phone: "+91 9123456780",
-      email: "priya.sharma@gmail.com",
-      location: "Indiranagar, Bengaluru",
-      token: "demo_customer_token",
-    });
-  };
-
   return (
     <div
       ref={loginBackdropRef}
@@ -801,31 +774,6 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                 </button>
               )}
             </div>
-
-            {/* Quick 1-click Demo Evaluation (on Login) */}
-            {activeTab === "login" && (
-              <div className="login-quick-demo-links">
-                <span className="quick-demo-label">Instant Demo Evaluation:</span>
-                <div className="quick-demo-btns">
-                  <button
-                    type="button"
-                    className="btn-quick-chip"
-                    onClick={handleInstantMerchantDemo}
-                    title="Directly enter Merchant Portal"
-                  >
-                    <Icon name="store" size={14} strokeWidth={1.8} /> Demo Merchant
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-quick-chip"
-                    onClick={handleInstantCustomerDemo}
-                    title="Directly enter Customer Portal"
-                  >
-                    <Icon name="cart" size={14} strokeWidth={1.8} /> Demo Customer
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Trust Badges */}
             <div className="login-trust-badges">
