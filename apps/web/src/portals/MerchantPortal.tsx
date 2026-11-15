@@ -1050,7 +1050,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
               <div className="dash-header-row">
                 <div className="dash-greeting-box">
                   <h1>Namaste, {session.name ? session.name.split(" ")[0] : "Rajesh"}!</h1>
-                  <p>Here's what's happening with your business today.</p>
+                  <p>{t(uiLanguage, "businessToday")}</p>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button
@@ -1077,7 +1077,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">₹12,450</div>
                     <div className="dash-kpi-label">
-                      <span>Today's Sales</span>
+                      <span>{t(uiLanguage, "todaysSales")}</span>
                       <span className="dash-kpi-growth">↑ 12%</span>
                     </div>
                   </div>
@@ -1090,7 +1090,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">{orders.length}</div>
                     <div className="dash-kpi-label">
-                      <span>Total Orders</span>
+                      <span>{t(uiLanguage, "totalOrders")}</span>
                       <span className="dash-kpi-growth">↑ 8%</span>
                     </div>
                   </div>
@@ -1186,7 +1186,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
               <div className="dash-bottom-grid">
                 <div className="mp-card">
                   <div className="dash-card-header">
-                    <span className="dash-card-title">Recent Orders</span>
+                    <span className="dash-card-title">{t(uiLanguage, "recentOrders")}</span>
                     <button
                       type="button"
                       className="mp-btn-secondary"
@@ -1267,7 +1267,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 <div className="mp-card">
                   <div className="dash-card-header">
                     <span className="dash-card-title">Inventory Alerts</span>
-                    <span className="mp-badge danger">Low Stock</span>
+                    <span className="mp-badge danger">{t(uiLanguage, "lowStock")}</span>
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1428,9 +1428,9 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             <div>
               <div className="module-toolbar">
                 <div>
-                  <h1 style={{ fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>Customer Orders</h1>
+                  <h1 style={{ fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>{t(uiLanguage, "customerOrders")}</h1>
                   <p style={{ color: "#64748b", margin: "4px 0 0 0", fontSize: "0.88rem" }}>
-                    Manage live orders from placement to final doorstep delivery
+                    {t(uiLanguage, "manageLiveOrders")}
                   </p>
                 </div>
               </div>

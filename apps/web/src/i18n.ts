@@ -57,9 +57,37 @@ export type TranslationKey =
   | "listening"
   | "askAssistant"
   | "selectLanguage"
-  | "continue";
+  | "continue"
+  | "hyperlocalDelivery"
+  | "shopLocalDukaan"
+  | "shopLocalDukaanSubtitle"
+  | "exploreNearby"
+  | "shopWithVoice"
+  | "exploreCategories"
+  | "viewAll"
+  | "allItems"
+  | "groceryStaples"
+  | "dairyMilk"
+  | "edibleOils"
+  | "flourAtta"
+  | "snacksMaggi"
+  | "dailyEssentials"
+  | "pharmacyCare"
+  | "localShopsOpen"
+  | "verifiedStores"
+  | "openFullMap"
+  | "popularEssentials"
+  | "itemsAvailable"
+  | "addToCart"
+  | "businessToday"
+  | "todaysSales"
+  | "totalOrders"
+  | "recentOrders"
+  | "lowStock"
+  | "customerOrders"
+  | "manageLiveOrders";
 
-const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = {
+const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, string>>> = {
   en: {
     dashboard: "Dashboard", products: "Products", orders: "Orders", inventory: "Inventory", payments: "Payments", customers: "Customers", shop: "My Shop", settings: "Settings", home: "Home", discover: "Discover", assistant: "Assistant", profile: "Profile", cart: "Cart", logout: "Logout", notifications: "Notifications", today: "Today", viewAllOrders: "View All Orders", addProduct: "Add Product", recentAlerts: "Recent Alerts", markRead: "Mark read", accountSettings: "Account Settings", switchCustomer: "Switch to Customer Mode", myOrders: "My Orders", languageAndVoice: "Language & Voice", tapToSpeak: "Tap microphone to speak", listening: "Listening...", askAssistant: "Ask your assistant", selectLanguage: "Choose your language", continue: "Continue",
   },
@@ -89,8 +117,41 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
   },
 };
 
+const extraTranslations: Partial<Record<SupportedLanguage, Partial<Record<TranslationKey, string>>>> = {
+  hi: {
+    hyperlocalDelivery: "आपके आसपास तेज़ डिलीवरी",
+    shopLocalDukaan: "अपनी स्थानीय दुकान से खरीदें, 15 मिनट में डिलीवरी",
+    shopLocalDukaanSubtitle: "कीमतों की तुलना करें, ताज़ा सामान पाएं और आसपास के स्थानीय व्यापारों का साथ दें।",
+    exploreNearby: "आसपास की दुकानें देखें",
+    shopWithVoice: "वॉइस AI से खरीदारी",
+    exploreCategories: "श्रेणियां देखें",
+    viewAll: "सभी देखें",
+    allItems: "सभी सामान",
+    groceryStaples: "किराना और रोज़मर्रा का सामान",
+    dairyMilk: "डेयरी और दूध",
+    edibleOils: "खाने के तेल",
+    flourAtta: "आटा और मैदा",
+    snacksMaggi: "स्नैक्स और मैगी",
+    dailyEssentials: "दैनिक ज़रूरतें",
+    pharmacyCare: "फार्मेसी और देखभाल",
+    localShopsOpen: "आपके पास 5 स्थानीय दुकानें खुली हैं",
+    verifiedStores: "आपके इलाके में 1.5 किमी के अंदर सत्यापित दुकानें",
+    openFullMap: "पूरा नक्शा खोलें",
+    popularEssentials: "लोकप्रिय सामान",
+    itemsAvailable: "सामान अभी उपलब्ध",
+    addToCart: "कार्ट में जोड़ें",
+    businessToday: "आज आपके कारोबार में यह हो रहा है",
+    todaysSales: "आज की बिक्री",
+    totalOrders: "कुल ऑर्डर",
+    recentOrders: "हाल के ऑर्डर",
+    lowStock: "कम स्टॉक",
+    customerOrders: "ग्राहक ऑर्डर",
+    manageLiveOrders: "ऑर्डर से डिलीवरी तक लाइव ऑर्डर संभालें",
+  },
+};
+
 export function t(language: SupportedLanguage | undefined, key: TranslationKey): string {
-  return translations[language || "en"][key] || translations.en[key];
+  return extraTranslations[language || "en"]?.[key] || translations[language || "en"][key] || translations.en[key] || key;
 }
 
 export function languageLocale(language: SupportedLanguage | undefined): string {

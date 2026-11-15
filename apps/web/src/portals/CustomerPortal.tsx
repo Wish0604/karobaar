@@ -709,13 +709,13 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
             <div className="cp-hero-banner">
               <div className="cp-hero-content">
                 <span className="cp-hero-badge">
-                  <Icon name="zap" size={12} strokeWidth={2} /> Hyperlocal Neighborhood Delivery
+                  <Icon name="zap" size={12} strokeWidth={2} /> {t(uiLanguage, "hyperlocalDelivery")}
                 </span>
                 <h1 className="cp-hero-title">
-                  Shop From Your Local Dukaan, Delivered in 15 Mins.
+                  {t(uiLanguage, "shopLocalDukaan")}
                 </h1>
                 <p className="cp-hero-subtitle">
-                  Compare prices, find fresh essentials, and support physical businesses around {currentLocation.split(",")[0]}.
+                  {t(uiLanguage, "shopLocalDukaanSubtitle")} {currentLocation.split(",")[0]}.
                 </p>
                 <div className="cp-hero-actions">
                   <button
@@ -724,7 +724,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                     style={{ padding: "12px 22px", fontSize: "0.95rem" }}
                     onClick={() => setActiveTab("map")}
                   >
-                    <Icon name="pin" size={15} strokeWidth={2} /> Explore Nearby Shops Map →
+                    <Icon name="pin" size={15} strokeWidth={2} /> {t(uiLanguage, "exploreNearby")} →
                   </button>
                   <button
                     type="button"
@@ -732,7 +732,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                     style={{ padding: "12px 18px", fontSize: "0.95rem" }}
                     onClick={() => setActiveTab("ai")}
                   >
-                    <Icon name="mic" size={15} strokeWidth={2} /> Shop with Voice AI
+                    <Icon name="mic" size={15} strokeWidth={2} /> {t(uiLanguage, "shopWithVoice")}
                   </button>
                 </div>
               </div>
@@ -743,26 +743,26 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
 
             {/* Categories Scroll */}
             <div className="cp-section-header">
-              <span className="cp-section-title">Explore Categories</span>
+              <span className="cp-section-title">{t(uiLanguage, "exploreCategories")}</span>
               <button
                 type="button"
                 className="cp-section-link"
                 onClick={() => setSelectedCategory("All")}
               >
-                View All
+                {t(uiLanguage, "viewAll")}
               </button>
             </div>
 
             <div className="cp-categories-scroll">
               {[
-                { label: "All Items", icon: "✨", cat: "All" },
-                { label: "Grocery & Staples", icon: "🌾", cat: "Grocery" },
-                { label: "Dairy & Milk", icon: "🥛", cat: "Dairy" },
-                { label: "Edible Oils", icon: "🌻", cat: "Edible Oil" },
-                { label: "Flour & Atta", icon: "🥖", cat: "Flour" },
-                { label: "Snacks & Maggi", icon: "🍜", cat: "Snacks" },
-                { label: "Daily Essentials", icon: "🧂", cat: "Staples" },
-                { label: "Pharmacy Care", icon: "💊", cat: "Pharmacy" },
+                { label: t(uiLanguage, "allItems"), icon: "✨", cat: "All" },
+                { label: t(uiLanguage, "groceryStaples"), icon: "🌾", cat: "Grocery" },
+                { label: t(uiLanguage, "dairyMilk"), icon: "🥛", cat: "Dairy" },
+                { label: t(uiLanguage, "edibleOils"), icon: "🌻", cat: "Edible Oil" },
+                { label: t(uiLanguage, "flourAtta"), icon: "🥖", cat: "Flour" },
+                { label: t(uiLanguage, "snacksMaggi"), icon: "🍜", cat: "Snacks" },
+                { label: t(uiLanguage, "dailyEssentials"), icon: "🧂", cat: "Staples" },
+                { label: t(uiLanguage, "pharmacyCare"), icon: "💊", cat: "Pharmacy" },
               ].map((c) => (
                 <div
                   key={c.cat}
@@ -780,10 +780,10 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               <div className="cp-map-teaser-header">
                 <div>
                   <strong style={{ fontSize: "1.05rem" }}>
-                    <Icon name="pin" size={14} strokeWidth={2} /> 5 Local Shops Open Near You
+                    <Icon name="pin" size={14} strokeWidth={2} /> {t(uiLanguage, "localShopsOpen")}
                   </strong>
                   <div style={{ fontSize: "0.78rem", color: "#64748b" }}>
-                    Verified physical stores within 1.5 km of {currentLocation}
+                    {t(uiLanguage, "verifiedStores")} {currentLocation}
                   </div>
                 </div>
                 <button
@@ -792,7 +792,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   style={{ padding: "8px 16px", fontSize: "0.84rem" }}
                   onClick={() => setActiveTab("map")}
                 >
-                  Open Full Map Discovery ➔
+                  {t(uiLanguage, "openFullMap")} ➔
                 </button>
               </div>
 
@@ -832,10 +832,10 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
             {/* Popular Local Products */}
             <div className="cp-section-header">
               <span className="cp-section-title">
-                Popular Essentials in {currentLocation.split(",")[0]}
+                {t(uiLanguage, "popularEssentials")} {currentLocation.split(",")[0]}
               </span>
               <span style={{ fontSize: "0.85rem", color: "#64748b" }}>
-                {filteredProducts.length} items available now
+                {filteredProducts.length} {t(uiLanguage, "itemsAvailable")}
               </span>
             </div>
 
@@ -888,7 +888,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                       style={{ flex: 1, padding: "8px 12px", fontSize: "0.84rem" }}
                       onClick={() => addToCart(p)}
                     >
-                      + Add to Cart
+                      + {t(uiLanguage, "addToCart")}
                     </button>
                   </div>
                 </div>
