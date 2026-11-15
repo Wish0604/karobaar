@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { AppView, UserSession } from "./types";
 import { ScrollVideoLanding } from "./components/ScrollVideoLanding";
 import { IntroVideoScreen } from "./components/IntroVideoScreen";
@@ -7,6 +7,8 @@ import { MerchantOnboarding } from "./portals/MerchantOnboarding";
 import { MerchantPortal } from "./portals/MerchantPortal";
 import { CustomerPortal } from "./portals/CustomerPortal";
 import { OneSignalPush } from "./components/OneSignalPush";
+import { LanguageSelection } from "./components/LanguageSelection";
+import type { SupportedLanguage } from "./i18n";
 
 export function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => {
@@ -36,7 +38,13 @@ export function App() {
     return null;
   });
 
+  useEffect(() => {
+    const language = session?.language || "en";
+    document.documentElement.lang = `${language}-IN`;
+  }, [session?.language]);
+
   const [showReplayModal, setShowReplayModal] = useState(false);
+  const [pendingRegistration, setPendingRegistration] = useState(false);
 
   const [targetRole, setTargetRole] = useState<"merchant" | "customer">("merchant");
 
@@ -48,14 +56,29 @@ export function App() {
   };
 
   const handleLoginSuccess = (userSession: UserSession, isNewRegistration: boolean = false) => {
-    setSession(userSession);
-    sessionStorage.setItem("karobaar_session", JSON.stringify(userSession));
+    const sessionWithDefaultLanguage = { ...userSession, language: userSession.language || "en" as SupportedLanguage };
+    setSession(sessionWithDefaultLanguage);
+    sessionStorage.setItem("karobaar_session", JSON.stringify(sessionWithDefaultLanguage));
+    if (isNewRegistration) {
+      setPendingRegistration(true);
+      setCurrentView("language");
+      return;
+    }
     // Onboarding triggers only after a merchant creates an account
-    if (userSession.role === "merchant" && isNewRegistration) {
+    setCurrentView(sessionWithDefaultLanguage.role);
+  };
+
+  const handleLanguageSelected = (language: SupportedLanguage) => {
+    if (!session) return;
+    const localizedSession = { ...session, language };
+    setSession(localizedSession);
+    sessionStorage.setItem("karobaar_session", JSON.stringify(localizedSession));
+    if (pendingRegistration && localizedSession.role === "merchant") {
       setCurrentView("onboarding");
     } else {
-      setCurrentView(userSession.role);
+      setCurrentView(localizedSession.role);
     }
+    setPendingRegistration(false);
   };
 
   const handleLogout = () => {
@@ -89,6 +112,10 @@ export function App() {
           onBackToIntro={handleBackToIntro}
           initialRole={targetRole}
         />
+      )}
+
+      {currentView === "language" && session && (
+        <LanguageSelection session={session} onSelect={handleLanguageSelected} />
       )}
 
       {/* 3. MERCHANT ONBOARDING (after registration, before dashboard) */}

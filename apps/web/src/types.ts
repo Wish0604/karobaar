@@ -1,4 +1,6 @@
-export type AppView = "intro" | "login" | "onboarding" | "merchant" | "customer";
+import type { SupportedLanguage } from "./i18n";
+
+export type AppView = "intro" | "login" | "language" | "onboarding" | "merchant" | "customer";
 
 export interface UserSession {
   role: "merchant" | "customer";
@@ -11,6 +13,7 @@ export interface UserSession {
   category?: string;
   location?: string;
   token?: string;
+  language?: SupportedLanguage;
 }
 
 export interface ProductItem {

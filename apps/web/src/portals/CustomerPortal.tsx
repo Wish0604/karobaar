@@ -5,6 +5,7 @@ import "./CustomerPortal.css";
 import { Icon } from "../components/icons";
 import { AIMascot, type MascotState } from "../components/AIMascot";
 import type { UserSession } from "../types";
+import { languageLocale, t } from "../i18n";
 
 export interface CustomerPortalProps {
   session: UserSession;
@@ -371,6 +372,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   onReplayIntro,
   onSwitchToMerchant,
 }) => {
+  const uiLanguage = session.language || "en";
   // Navigation
   const [activeTab, setActiveTab] = useState<CustomerTab>("home");
 
@@ -518,7 +520,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
       const response = await fetch(`${API_ORIGIN}/api/v1/ai/assistant/message`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role: "customer", message: q, language: "en" }),
+        body: JSON.stringify({ role: "customer", message: q, language: uiLanguage }),
       });
       const body = await response.json();
       if (!response.ok || !body?.success) throw new Error(body?.error?.message || "Assistant request failed");
@@ -621,35 +623,35 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 className={`cp-tab-link ${activeTab === "home" ? "active" : ""}`}
                 onClick={() => setActiveTab("home")}
               >
-                Home
+                {t(uiLanguage, "home")}
               </button>
               <button
                 type="button"
                 className={`cp-tab-link ${activeTab === "map" ? "active" : ""}`}
                 onClick={() => setActiveTab("map")}
               >
-                <Icon name="pin" size={14} strokeWidth={1.8} /> Nearby Shops
+                <Icon name="pin" size={14} strokeWidth={1.8} /> {t(uiLanguage, "discover")}
               </button>
               <button
                 type="button"
                 className={`cp-tab-link ${activeTab === "ai" ? "active" : ""}`}
                 onClick={() => setActiveTab("ai")}
               >
-                <Icon name="sparkle" size={14} strokeWidth={1.8} /> AI Assistant
+                <Icon name="sparkle" size={14} strokeWidth={1.8} /> {t(uiLanguage, "assistant")}
               </button>
               <button
                 type="button"
                 className={`cp-tab-link ${activeTab === "orders" ? "active" : ""}`}
                 onClick={() => setActiveTab("orders")}
               >
-                <Icon name="bag" size={14} strokeWidth={1.8} /> My Orders
+                <Icon name="bag" size={14} strokeWidth={1.8} /> {t(uiLanguage, "myOrders")}
               </button>
               <button
                 type="button"
                 className={`cp-tab-link ${activeTab === "profile" ? "active" : ""}`}
                 onClick={() => setActiveTab("profile")}
               >
-                <Icon name="user" size={14} strokeWidth={1.8} /> Profile
+                <Icon name="user" size={14} strokeWidth={1.8} /> {t(uiLanguage, "profile")}
               </button>
             </nav>
 
@@ -1083,7 +1085,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               KAROBAAR Shopping Copilot
             </h1>
             <p style={{ color: "#64748b", margin: "0 0 20px 0", fontSize: "0.92rem" }}>
-              Ask in Hindi or English to discover neighborhood stores, compare prices, or add items to cart.
+              {t(uiLanguage, "askAssistant")} to discover neighborhood stores, compare prices, or add items to cart.
             </p>
 
             {/* Conversation Thread */}
@@ -1109,7 +1111,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               <Icon name="mic" size={26} strokeWidth={2} />
             </button>
             <div style={{ fontSize: "0.85rem", fontWeight: 700, marginBottom: 20 }}>
-              {isAiListening ? "Listening... Boliye!" : "Tap microphone to speak"}
+              {isAiListening ? t(uiLanguage, "listening") : t(uiLanguage, "tapToSpeak")}
             </div>
 
             {/* Text Input Row */}
@@ -1449,7 +1451,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
           onClick={() => setActiveTab("home")}
         >
           <Icon name="store" size={18} strokeWidth={1.8} />
-          <span>Home</span>
+              <span>{t(uiLanguage, "home")}</span>
         </button>
 
         <button
@@ -1479,7 +1481,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
           onClick={() => setActiveTab("orders")}
         >
           <Icon name="bag" size={18} strokeWidth={1.8} />
-          <span>Orders</span>
+          <span>{t(uiLanguage, "orders")}</span>
         </button>
 
         <button
@@ -1488,7 +1490,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
           onClick={() => setActiveTab("profile")}
         >
           <Icon name="user" size={18} strokeWidth={1.8} />
-          <span>Profile</span>
+          <span>{t(uiLanguage, "profile")}</span>
         </button>
       </nav>
 

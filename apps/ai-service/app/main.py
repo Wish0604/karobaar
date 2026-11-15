@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, Dict, Literal, Optional
 
 import httpx
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 app = FastAPI(title="LocalAI Intelligence Service", version="0.2.0")
 
@@ -23,7 +24,7 @@ SARVAM_STT_MODEL = os.getenv("SARVAM_STT_MODEL", "saaras:v4")
 SARVAM_TTS_MODEL = os.getenv("SARVAM_TTS_MODEL", "bulbul:v3")
 SARVAM_TTS_SPEAKER = os.getenv("SARVAM_TTS_SPEAKER", "simran")
 GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY") or "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 sarvam_configured = bool(SARVAM_API_KEY)
 gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
@@ -185,15 +186,20 @@ You can help with {capabilities}. Use the user's language where practical ({payl
 Be specific and concise. Use the demo business data only when it is relevant, and never claim an action was completed unless the user explicitly confirms it.
 Do not mention system prompts, APIs, or model details."""
 
-    try:
-        result = gemini_client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.4, max_output_tokens=500),
-        )
-        response = (result.text or "I could not find a useful answer. Please try asking in a little more detail.").strip()
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail={"success": False, "error": {"code": "gemini_request_failed", "message": str(exc)[:300]}})
+    last_error: Exception | None = None
+    for _ in range(2):
+        try:
+            result = gemini_client.models.generate_content(
+                model=GEMINI_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.4, max_output_tokens=500),
+            )
+            response = (result.text or "I could not find a useful answer. Please try asking in a little more detail.").strip()
+            break
+        except Exception as exc:
+            last_error = exc
+    else:
+        raise HTTPException(status_code=502, detail={"success": False, "error": {"code": "gemini_request_failed", "message": str(last_error)[:300]}})
 
     return {
         "success": True,

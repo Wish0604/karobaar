@@ -6,6 +6,7 @@ import { AIMascot } from "../components/AIMascot";
 import "./MerchantPortal.css";
 import { AiAssistantWidget } from "../components/AiAssistantWidget";
 import type { UserSession, ProductItem } from "../types";
+import { languageLocale, t } from "../i18n";
 
 export interface MerchantPortalProps {
   session: UserSession;
@@ -249,6 +250,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   onOpenOnboarding,
   onSwitchToCustomer,
 }) => {
+  const uiLanguage = session.language || "en";
   // Navigation State
   const [activeModule, setActiveModule] = useState<MerchantModule>("dashboard");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -404,7 +406,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
       const response = await fetch(`${API_ORIGIN}/api/v1/ai/assistant/message`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role: "merchant", message: q, language: "en" }),
+        body: JSON.stringify({ role: "merchant", message: q, language: uiLanguage }),
       });
       const body = await response.json();
       if (!response.ok || !body?.success) throw new Error(body?.error?.message || "Assistant request failed");
@@ -460,7 +462,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
     };
   }, []);
 
-  const detectVoiceLanguage = (text: string) => (/[\u0900-\u097F]/.test(text) ? "hi-IN" : "en-IN");
+  const detectVoiceLanguage = (_text: string) => languageLocale(uiLanguage);
 
   const stopAiSpeaking = () => {
     if (ttsAudioRef.current) {
@@ -771,11 +773,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "dashboard" ? "active" : ""}`}
             onClick={() => setActiveModule("dashboard")}
-            title={sidebarExpanded ? "" : "Dashboard"}
+            title={sidebarExpanded ? "" : t(uiLanguage, "dashboard")}
           >
             {sidebarExpanded && <span className="mp-nav-num">01</span>}
             <span className="mp-nav-icon"><Icon name="chart" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Dashboard</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "dashboard")}</span>}
           </button>
 
           {/* 02 Products */}
@@ -783,11 +785,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "products" ? "active" : ""}`}
             onClick={() => setActiveModule("products")}
-            title={sidebarExpanded ? "" : `Products (${products.length})`}
+            title={sidebarExpanded ? "" : `${t(uiLanguage, "products")} (${products.length})`}
           >
             {sidebarExpanded && <span className="mp-nav-num">02</span>}
             <span className="mp-nav-icon"><Icon name="package" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Products</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "products")}</span>}
             <span className="mp-nav-badge">{products.length}</span>
           </button>
 
@@ -796,11 +798,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "orders" ? "active" : ""}`}
             onClick={() => setActiveModule("orders")}
-            title={sidebarExpanded ? "" : `Orders (${orders.filter((o) => o.status === "new").length})`}
+            title={sidebarExpanded ? "" : `${t(uiLanguage, "orders")} (${orders.filter((o) => o.status === "new").length})`}
           >
             {sidebarExpanded && <span className="mp-nav-num">03</span>}
             <span className="mp-nav-icon"><Icon name="bag" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Orders</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "orders")}</span>}
             <span className="mp-nav-badge">
               {orders.filter((o) => o.status === "new").length}
             </span>
@@ -811,11 +813,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "inventory" ? "active" : ""}`}
             onClick={() => setActiveModule("inventory")}
-            title={sidebarExpanded ? "" : "Inventory"}
+            title={sidebarExpanded ? "" : t(uiLanguage, "inventory")}
           >
             {sidebarExpanded && <span className="mp-nav-num">04</span>}
             <span className="mp-nav-icon"><Icon name="clipboard" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Inventory</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "inventory")}</span>}
           </button>
 
           {/* 05 Payments */}
@@ -823,11 +825,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "payments" ? "active" : ""}`}
             onClick={() => setActiveModule("payments")}
-            title={sidebarExpanded ? "" : "Payments"}
+            title={sidebarExpanded ? "" : t(uiLanguage, "payments")}
           >
             {sidebarExpanded && <span className="mp-nav-num">05</span>}
             <span className="mp-nav-icon"><Icon name="card" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Payments</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "payments")}</span>}
           </button>
 
           {/* 06 Customers */}
@@ -835,11 +837,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "customers" ? "active" : ""}`}
             onClick={() => setActiveModule("customers")}
-            title={sidebarExpanded ? "" : "Customers"}
+            title={sidebarExpanded ? "" : t(uiLanguage, "customers")}
           >
             {sidebarExpanded && <span className="mp-nav-num">06</span>}
             <span className="mp-nav-icon"><Icon name="users" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Customers</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "customers")}</span>}
           </button>
 
           {/* 07 Shop Management */}
@@ -847,11 +849,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "shop" ? "active" : ""}`}
             onClick={() => setActiveModule("shop")}
-            title={sidebarExpanded ? "" : "Shop Management"}
+            title={sidebarExpanded ? "" : t(uiLanguage, "shop")}
           >
             {sidebarExpanded && <span className="mp-nav-num">07</span>}
             <span className="mp-nav-icon"><Icon name="store" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Shop Management</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "shop")}</span>}
           </button>
         </nav>
 
@@ -861,11 +863,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item mp-settings-item ${activeModule === "settings" ? "active" : ""}`}
             onClick={() => setActiveModule("settings")}
-            title={sidebarExpanded ? "" : "Settings"}
+            title={sidebarExpanded ? "" : t(uiLanguage, "settings")}
           >
             {sidebarExpanded && <span className="mp-nav-num">08</span>}
             <span className="mp-nav-icon"><Icon name="settings" size={20} strokeWidth={2} /></span>
-            {sidebarExpanded && <span className="mp-nav-label">Settings</span>}
+            {sidebarExpanded && <span className="mp-nav-label">{t(uiLanguage, "settings")}</span>}
           </button>
 
           {/* Online Dot / Store Indicator */}
@@ -943,8 +945,8 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <strong style={{ fontSize: "0.95rem" }}>Recent Alerts</strong>
-              <span style={{ fontSize: "0.75rem", color: "#64748b" }}>Mark read</span>
+              <strong style={{ fontSize: "0.95rem" }}>{t(uiLanguage, "recentAlerts")}</strong>
+              <span style={{ fontSize: "0.75rem", color: "#64748b" }}>{t(uiLanguage, "markRead")}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ padding: "8px 10px", background: "#fef9c3", borderRadius: 8, fontSize: "0.82rem" }}>
@@ -987,7 +989,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 setActiveModule("settings");
               }}
             >
-              <Icon name="settings" size={15} strokeWidth={1.8} /> Account Settings
+              <Icon name="settings" size={15} strokeWidth={1.8} /> {t(uiLanguage, "accountSettings")}
             </button>
             {onOpenOnboarding && (
               <button
@@ -1012,7 +1014,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onSwitchToCustomer();
                 }}
               >
-                <Icon name="cart" size={15} strokeWidth={1.8} /> Switch to Customer Mode
+                <Icon name="cart" size={15} strokeWidth={1.8} /> {t(uiLanguage, "switchCustomer")}
               </button>
             )}
             <button
@@ -1046,14 +1048,14 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                     className="mp-btn-secondary"
                     onClick={() => setActiveModule("orders")}
                   >
-                    View All Orders →
+                    {t(uiLanguage, "viewAllOrders")} →
                   </button>
                   <button
                     type="button"
                     className="mp-btn-primary"
                     onClick={() => setShowAddProductModal(true)}
                   >
-                    + Add Product
+                    + {t(uiLanguage, "addProduct")}
                   </button>
                 </div>
               </div>
