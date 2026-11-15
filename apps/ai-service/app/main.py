@@ -23,7 +23,7 @@ SARVAM_STT_MODEL = os.getenv("SARVAM_STT_MODEL", "saaras:v4")
 SARVAM_TTS_MODEL = os.getenv("SARVAM_TTS_MODEL", "bulbul:v3")
 SARVAM_TTS_SPEAKER = os.getenv("SARVAM_TTS_SPEAKER", "simran")
 GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY") or "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
 sarvam_configured = bool(SARVAM_API_KEY)
 gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
