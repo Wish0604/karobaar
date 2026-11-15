@@ -96,3 +96,15 @@ export function t(language: SupportedLanguage | undefined, key: TranslationKey):
 export function languageLocale(language: SupportedLanguage | undefined): string {
   return LANGUAGE_OPTIONS.find((option) => option.code === (language || "en"))?.locale || "en-IN";
 }
+
+export const assistantVoiceQueries: Record<SupportedLanguage, string> = {
+  en: "Show nearby grocery shops and rice prices",
+  hi: "मेरे आस-पास किराने की दुकानें और चावल के दाम दिखाओ",
+  bn: "আমার কাছের মুদির দোকান এবং চালের দাম দেখাও",
+  ta: "எனக்கு அருகிலுள்ள மளிகைக் கடைகளையும் அரிசி விலைகளையும் காட்டு",
+  te: "నా దగ్గరలోని కిరాణా దుకాణాలు మరియు బియ్యం ధరలు చూపించు",
+  mr: "माझ्या जवळची किराणा दुकाने आणि तांदळाचे दर दाखवा",
+  kn: "ನನ್ನ ಹತ್ತಿರದ ಕಿರಾಣಿ ಅಂಗಡಿಗಳು ಮತ್ತು ಅಕ್ಕಿ ಬೆಲೆಗಳನ್ನು ತೋರಿಸಿ",
+  ml: "എന്റെ അടുത്തുള്ള പലചരക്ക് കടകളും അരിയുടെ വിലകളും കാണിക്കുക",
+  gu: "મારી નજીકની કરિયાણાની દુકાનો અને ચોખાના ભાવ બતાવો",
+};

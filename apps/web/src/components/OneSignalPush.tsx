@@ -8,11 +8,17 @@ let scriptInjected = false;
 let sdkReady = false;
 let pendingExternalId: string | null = null;
 let oneSignalApi: OneSignalApi | null = null;
+const readyCallbacks: Array<() => void> = [];
 
 /** Canonical v16 boot: queue a callback BEFORE loading the stub — the SDK
  *  executes it exactly when it is ready, so init/login never race. */
-function bootSdk() {
-  if (scriptInjected || !APP_ID) return;
+function bootSdk(onReady?: () => void) {
+  if (!APP_ID) return;
+  if (scriptInjected) {
+    if (sdkReady) onReady?.();
+    else if (onReady) readyCallbacks.push(onReady);
+    return;
+  }
   scriptInjected = true;
   const w = window as any;
   w.OneSignalDeferred = w.OneSignalDeferred || [];
@@ -41,9 +47,16 @@ function bootSdk() {
         },
       });
 
-      // Explicitly open the subscription prompt on localhost. Without this,
-      // a browser can load the SDK successfully but never create a player.
-      await OneSignal.Slidedown?.promptPush?.();
+      // Mark the SDK ready before prompting so a rejected automatic prompt
+      // still leaves the explicit in-app permission button available.
+      sdkReady = true;
+      readyCallbacks.splice(0).forEach((callback) => callback());
+      onReady?.();
+      try {
+        await OneSignal.Slidedown?.promptPush?.();
+      } catch (err) {
+        console.warn("[OneSignal] automatic prompt unavailable:", err);
+      }
 
       // Deep link: notifications carry data.url — open it on click.
       OneSignal.Notifications.addNotificationClickListener?.((event: any) => {
@@ -51,7 +64,6 @@ function bootSdk() {
         if (url) window.location.href = url;
       });
 
-      sdkReady = true;
       if (pendingExternalId) {
         try {
           OneSignal.User.login(pendingExternalId);
@@ -93,9 +105,11 @@ function loginUser(externalId: string) {
  * (e.g. "merchant_u_demo", "customer_u_demo").
  */
 export const OneSignalPush: React.FC<{ userId?: string | null; role?: string | null }> = ({ userId, role }) => {
+  const [showEnableButton, setShowEnableButton] = React.useState(false);
+
   useEffect(() => {
     if (!APP_ID) return;
-    bootSdk();
+    bootSdk(() => setShowEnableButton(true));
   }, []);
 
   // Bind the subscribed device to the logged-in user so the backend can target them.
@@ -109,5 +123,23 @@ export const OneSignalPush: React.FC<{ userId?: string | null; role?: string | n
     loginUser(`${role}_${userId}`);
   }, [userId, role]);
 
-  return null;
+  if (!APP_ID || !showEnableButton) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await oneSignalApi?.Notifications?.requestPermission?.();
+          await oneSignalApi?.Slidedown?.promptPush?.();
+          setShowEnableButton(false);
+        } catch (err) {
+          console.warn("[OneSignal] permission request failed:", err);
+        }
+      }}
+      style={{ position: "fixed", right: 18, bottom: 18, zIndex: 9999, border: 0, borderRadius: 999, padding: "11px 16px", background: "#176b4d", color: "#fff", fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 24px rgba(0,0,0,.18)" }}
+    >
+      Enable notifications
+    </button>
+  );
 };

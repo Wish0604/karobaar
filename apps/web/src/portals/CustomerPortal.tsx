@@ -5,7 +5,7 @@ import "./CustomerPortal.css";
 import { Icon } from "../components/icons";
 import { AIMascot, type MascotState } from "../components/AIMascot";
 import type { UserSession } from "../types";
-import { languageLocale, t } from "../i18n";
+import { assistantVoiceQueries, languageLocale, t } from "../i18n";
 
 export interface CustomerPortalProps {
   session: UserSession;
@@ -537,10 +537,10 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     if (!isAiListening) {
       setIsAiListening(true);
       setMascotEmotion("listening");
-      showToast("🎙️ Listening... Speak your shopping request in Hindi or English");
+      showToast(`🎙️ ${t(uiLanguage, "listening")}`);
       window.setTimeout(() => {
         setIsAiListening(false);
-        handleSendAiMessage("Mere aas paas grocery shops aur rice prices dikhao");
+        handleSendAiMessage(assistantVoiceQueries[uiLanguage]);
       }, 3500);
     } else {
       setIsAiListening(false);
