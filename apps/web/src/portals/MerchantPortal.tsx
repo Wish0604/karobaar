@@ -513,37 +513,34 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
     const spokenText = stripAssistantMarkup(text);
     if (aiVoiceMutedRef.current) return;
     stopAiSpeaking();
+    if (sarvamReadyRef.current !== true) {
+      showToast("Sarvam voice is not configured. Add SARVAM_API_KEY to apps/ai-service/.env.");
+      return;
+    }
     setIsAiSpeaking(true);
 
-    if (sarvamReadyRef.current === true) {
-      try {
-        const res = await fetch("/api/v1/ai/voice/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: spokenText, languageCode: detectVoiceLanguage(spokenText) }),
-        });
-        const json = await res.json();
-        const audioBase64 = json?.success ? (json?.data?.audioBase64 as string | undefined) : undefined;
-        if (audioBase64) {
-          const audio = new Audio(`data:audio/wav;base64,${audioBase64}`);
-          ttsAudioRef.current = audio;
-          audio.onended = () => setIsAiSpeaking(false);
-          audio.onerror = () => {
-            ttsAudioRef.current = null;
-            browserSpeak(spokenText);
-          };
-          try {
-            await audio.play();
-            return;
-          } catch {
-            // autoplay blocked or decode failure → browser TTS
-          }
-        }
-      } catch {
-        // Sarvam TTS unreachable → browser TTS fallback
-      }
+    try {
+      const res = await fetch("/api/v1/ai/voice/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: spokenText, languageCode: detectVoiceLanguage(spokenText) }),
+      });
+      const json = await res.json();
+      const audioBase64 = json?.success ? (json?.data?.audioBase64 as string | undefined) : undefined;
+      if (!audioBase64) throw new Error("Sarvam returned no audio");
+      const audio = new Audio(`data:audio/wav;base64,${audioBase64}`);
+      ttsAudioRef.current = audio;
+      audio.onended = () => setIsAiSpeaking(false);
+      audio.onerror = () => {
+        ttsAudioRef.current = null;
+        setIsAiSpeaking(false);
+        showToast("Sarvam voice could not play this response.");
+      };
+      await audio.play();
+    } catch {
+      setIsAiSpeaking(false);
+      showToast("Sarvam voice service is unavailable. Check SARVAM_API_KEY and try again.");
     }
-    browserSpeak(spokenText);
   };
 
   const handleToggleAiMute = () => {
