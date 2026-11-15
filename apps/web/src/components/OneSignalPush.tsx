@@ -43,7 +43,7 @@ function bootSdk() {
 
       // Deep link: notifications carry data.url — open it on click.
       OneSignal.Notifications.addNotificationClickListener?.((event: any) => {
-        const url = event?.notification?.data?.url;
+        const url = event?.notification?.launchURL || event?.notification?.url || event?.notification?.data?.url;
         if (url) window.location.href = url;
       });
 

@@ -40,6 +40,7 @@ export async function sendPush(payload: PushPayload): Promise<void> {
         target_channel: "push",
         headings: { en: payload.heading },
         contents: { en: payload.content },
+        url: payload.url || WEB_APP_URL || undefined,
         data: { ...payload.data, url: payload.url || WEB_APP_URL || undefined },
         web_push_topic: "karobaar",
       }),
