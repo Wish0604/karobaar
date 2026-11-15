@@ -286,7 +286,7 @@ app.post("/api/v1/ai/voice/stt", express.raw({ type: "*/*", limit: "10mb" }), as
     const upstream = await fetch(`${AI_SERVICE_URL}/v1/voice/stt`, {
       method: "POST",
       headers: { "content-type": req.headers["content-type"] || "audio/webm" },
-      body: req.body as Buffer,
+      body: new Uint8Array(req.body as Buffer),
     });
     await forwardToAiService(upstream, res);
   } catch {

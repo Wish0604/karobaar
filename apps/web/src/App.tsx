@@ -119,6 +119,7 @@ export function App() {
           session={session}
           onLogout={handleLogout}
           onReplayIntro={() => setShowReplayModal(true)}
+          onSwitchToMerchant={() => setCurrentView("merchant")}
         />
       )}
 
