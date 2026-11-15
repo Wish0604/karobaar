@@ -428,6 +428,17 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const showToast = (msg: string) => {
     setToastMessage(msg);
     window.setTimeout(() => setToastMessage(null), 3200);
+    void fetch(`${API_ORIGIN}/api/v1/activity`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        role: "customer",
+        userId: session.userId,
+        heading: t(uiLanguage, "notifications"),
+        content: msg,
+        type: "customer_activity",
+      }),
+    }).catch(() => undefined);
   };
 
   // Cart operations

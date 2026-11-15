@@ -322,6 +322,17 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   const showToast = (msg: string) => {
     setToastMessage(msg);
     window.setTimeout(() => setToastMessage(null), 3200);
+    void fetch(`${API_ORIGIN}/api/v1/activity`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        role: "merchant",
+        userId: session.userId,
+        heading: t(uiLanguage, "notifications"),
+        content: msg,
+        type: "merchant_activity",
+      }),
+    }).catch(() => undefined);
   };
 
   // Order state transitions

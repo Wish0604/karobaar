@@ -28,7 +28,14 @@ app.post("/api/v1/auth/send-otp", (req, res) => {
   const result = schema.safeParse(req.body);
   if (!result.success) return res.status(400).json({ success: false, error: result.error.flatten() });
 
-  res.json({ success: true, data: { otpSessionId: "demo-session", expiresInSeconds: 300 } });
+  const demoOtp = "123456";
+  void sendPush({
+    externalIds: [],
+    heading: "Verification code",
+    content: `Your KAROBAAR verification code is ${demoOtp}. It expires in 5 minutes.`,
+    data: { type: "otp", identifier: result.data.phone || result.data.email },
+  });
+  res.json({ success: true, data: { otpSessionId: "demo-session", expiresInSeconds: 300, demoOtp } });
 });
 
 app.post("/api/v1/auth/verify-otp", (req, res) => {
@@ -42,6 +49,12 @@ app.post("/api/v1/auth/verify-otp", (req, res) => {
   const result = schema.safeParse(req.body);
   if (!result.success) return res.status(400).json({ success: false, error: result.error.flatten() });
 
+  void sendPush({
+    externalIds: [`${result.data.role}_u_demo`],
+    heading: "Sign-in successful",
+    content: "Your KAROBAAR account is now active on this device.",
+    data: { type: "auth_verified", role: result.data.role },
+  });
   res.json({
     success: true,
     data: {
@@ -99,6 +112,13 @@ app.post("/api/v1/merchant/onboarding", (req, res) => {
   const merchant = { id: `biz_${db.merchants.length + 1}`, ...parsed.data };
   db.merchants.push(merchant);
 
+  void sendPush({
+    externalIds: [`merchant_${merchant.id}`],
+    heading: "Business profile created",
+    content: `${merchant.displayName} is ready for setup on KAROBAAR.`,
+    data: { type: "merchant_onboarding", merchantId: merchant.id },
+  });
+
   res.status(201).json({ success: true, data: merchant });
 });
 
@@ -118,6 +138,12 @@ app.post("/api/v1/merchant/products", (req, res) => {
 
   const product = { id: `prd_${db.products.length + 1}`, ...parsed.data };
   db.products.push(product);
+  void sendPush({
+    externalIds: [`merchant_${product.businessId}`],
+    heading: "Product added",
+    content: `${product.name} was added to your catalogue.`,
+    data: { type: "product_added", productId: product.id },
+  });
   res.status(201).json({ success: true, data: product });
 });
 
@@ -136,6 +162,12 @@ app.patch("/api/v1/merchant/inventory/:productId", (req, res) => {
   if (!product) return res.status(404).json({ success: false, error: "Product not found" });
 
   product.quantity = parsed.data.quantity;
+  void sendPush({
+    externalIds: [`merchant_${product.businessId}`],
+    heading: "Inventory updated",
+    content: `${product.name} now has ${product.quantity} units in stock.`,
+    data: { type: "inventory_updated", productId: product.id },
+  });
   res.json({ success: true, data: product });
 });
 
@@ -192,6 +224,13 @@ app.post("/api/v1/reservations", (req, res) => {
   };
   db.reservations.push(reservation);
 
+  void sendPush({
+    externalIds: [`merchant_${reservation.businessId}`],
+    heading: "New reservation",
+    content: `A customer reserved ${reservation.quantity} × ${product.name}.`,
+    data: { type: "reservation_created", reservationId: reservation.id },
+  });
+
   res.status(201).json({ success: true, data: reservation });
 });
 
@@ -241,6 +280,12 @@ app.post("/api/v1/orders", (req, res) => {
     return product ? [product.businessId] : [];
   }))];
   const itemCount = parsed.data.items.reduce((sum, item) => sum + item.quantity, 0);
+  void sendPush({
+    externalIds: [`customer_${parsed.data.customerId}`],
+    heading: "Order received",
+    content: `Your order #${order.id} was received for ₹${total}.`,
+    data: { type: "order_created", orderId: order.id, total, itemCount },
+  });
   for (const businessId of businessIds) {
     void sendPush({
       externalIds: [`merchant_${businessId}`],
@@ -258,6 +303,13 @@ app.post("/api/v1/payments/create", (req, res) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ success: false, error: parsed.error.flatten() });
 
+  void sendPush({
+    externalIds: [],
+    heading: "Payment started",
+    content: `Payment of ₹${parsed.data.amount} was started for order ${parsed.data.orderId}.`,
+    data: { type: "payment_started", orderId: parsed.data.orderId, paymentMethod: parsed.data.method },
+  });
+
   res.status(201).json({
     success: true,
     data: {
@@ -272,7 +324,33 @@ app.post("/api/v1/payments/create", (req, res) => {
 });
 
 app.post("/api/v1/payments/webhook", (req, res) => {
+  void sendPush({
+    externalIds: [],
+    heading: "Payment update",
+    content: `Payment status updated: ${req.body?.event || "payment.updated"}.`,
+    data: { type: "payment_updated", event: req.body?.event || "payment.updated" },
+  });
   res.json({ success: true, data: { received: true, event: req.body?.event || "payment.updated" } });
+});
+
+app.post("/api/v1/activity", (req, res) => {
+  const schema = z.object({
+    role: z.enum(["merchant", "customer"]),
+    userId: z.string().min(1),
+    heading: z.string().min(1).max(120),
+    content: z.string().min(1).max(500),
+    type: z.string().min(1).max(80).default("activity"),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, error: parsed.error.flatten() });
+
+  void sendPush({
+    externalIds: [`${parsed.data.role}_${parsed.data.userId}`],
+    heading: parsed.data.heading,
+    content: parsed.data.content,
+    data: { type: parsed.data.type },
+  });
+  res.status(202).json({ success: true, data: { queued: true } });
 });
 
 app.post("/api/v1/ai/assistant/message", async (req, res) => {

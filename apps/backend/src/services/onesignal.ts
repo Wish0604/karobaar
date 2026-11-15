@@ -16,6 +16,7 @@ export function pushConfigured(): boolean {
 
 export interface PushPayload {
   externalIds: string[];
+  includeAllSubscribed?: boolean;
   heading: string;
   content: string;
   url?: string;
@@ -28,6 +29,9 @@ export async function sendPush(payload: PushPayload): Promise<void> {
     return;
   }
   try {
+    const audience = payload.externalIds.length > 0
+      ? { include_aliases: { external_id: payload.externalIds } }
+      : { included_segments: ["Subscribed Users"] };
     const res = await fetch("https://api.onesignal.com/notifications", {
       method: "POST",
       headers: {
@@ -36,7 +40,7 @@ export async function sendPush(payload: PushPayload): Promise<void> {
       },
       body: JSON.stringify({
         app_id: APP_ID,
-        include_aliases: { external_id: payload.externalIds },
+        ...audience,
         target_channel: "push",
         headings: { en: payload.heading },
         contents: { en: payload.content },
