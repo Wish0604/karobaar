@@ -19,7 +19,7 @@ SARVAM_API_BASE = "https://api.sarvam.ai"
 SARVAM_API_KEY = (os.getenv("SARVAM_API_KEY") or "").strip()
 SARVAM_STT_MODEL = os.getenv("SARVAM_STT_MODEL", "saaras:v4")
 SARVAM_TTS_MODEL = os.getenv("SARVAM_TTS_MODEL", "bulbul:v3")
-SARVAM_TTS_SPEAKER = os.getenv("SARVAM_TTS_SPEAKER", "shubh")
+SARVAM_TTS_SPEAKER = os.getenv("SARVAM_TTS_SPEAKER", "simran")
 
 sarvam_configured = bool(SARVAM_API_KEY)
 
@@ -37,7 +37,7 @@ class ToolCall(BaseModel):
 
 class TtsRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2500)
-    languageCode: str = "en-IN"
+    languageCode: str = "hi-IN"
     speaker: Optional[str] = None
 
 
