@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? "http://localhost:4000";
 import { Icon, type IconName } from "../components/icons";
 import { AIMascot } from "../components/AIMascot";
 import "./MerchantPortal.css";
@@ -390,65 +392,33 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
     setNewProdName("");
   };
 
-  // AI Assistant Chat & Voice Simulation
-  const handleSendAiMessage = (queryText?: string) => {
+  // AI Assistant Chat
+  const handleSendAiMessage = async (queryText?: string) => {
     const q = (queryText || aiInputText).trim();
     if (!q) return;
 
     setAiInputText("");
     setAiSpeechState("processing");
     setAiChatHistory((prev) => [...prev, { sender: "user", text: q }]);
-
-    window.setTimeout(() => {
-      let aiReply = "Bilkul! I have analyzed that for your store.";
-      let actionObj: { title: string; desc: string; apply: () => void } | null = null;
-
-      const lower = q.toLowerCase();
-      if (lower.includes("sales") || lower.includes("bikri") || lower.includes("earning")) {
-        aiReply = "Namaste Rajesh ji! Today's sales stand at ₹12,450 across 24 orders. Top selling item: Maggi Noodles (18 packs). Sales are up by 12% compared to yesterday!";
-      } else if (lower.includes("stock") || lower.includes("tata salt") || lower.includes("rice")) {
-        aiReply = "Tata Salt has 48 units in stock (Healthy). However, Aashirvaad Atta 5kg has only 6 units remaining (Below threshold). Would you like me to create an order restock draft?";
-        actionObj = {
-          title: "Restock Aashirvaad Atta 5kg (+30 Units)",
-          desc: "Add 30 units from wholesale distributor into inventory",
-          apply: () => {
-            setProducts((prev) =>
-              prev.map((p) => (p.id === "prd_2" ? { ...p, quantity: p.quantity + 30, status: "Active" } : p))
-            );
-            showToast("Aashirvaad Atta restocked with +30 units!");
-          },
-        };
-      } else if (lower.includes("offer") || lower.includes("discount") || lower.includes("weekend")) {
-        aiReply = "Great idea! I recommend creating a 10% weekend discount on Daily Essentials for orders above ₹399. Shall I apply code 'WEEKEND10'?";
-        actionObj = {
-          title: "Launch 'WEEKEND10' (10% Off above ₹399)",
-          desc: "Create and broadcast promo to 52 repeat customers on WhatsApp",
-          apply: () => {
-            showToast("Promo 'WEEKEND10' activated!");
-          },
-        };
-      } else if (lower.includes("order") || lower.includes("pending")) {
-        aiReply = `You have 2 pending orders waiting for approval: #KB1024 from Rahul Verma (₹476) and #KB1025 from Priya Sharma (₹854). Shall I accept all new orders?`;
-        actionObj = {
-          title: "Accept All New Orders (2 Orders)",
-          desc: "Move #KB1024 and #KB1025 to Accepted & notify customers",
-          apply: () => {
-            setOrders((prev) =>
-              prev.map((o) => (o.status === "new" ? { ...o, status: "accepted" } : o))
-            );
-            showToast("Accepted all pending orders!");
-          },
-        };
-      } else {
-        aiReply = `Samajh gaya! I've noted: "${q}". You can ask me to update stock, check settlements, or view customer insights anytime.`;
-      }
-
+    try {
+      const response = await fetch(`${API_ORIGIN}/api/v1/ai/assistant/message`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role: "merchant", message: q, language: "en" }),
+      });
+      const body = await response.json();
+      if (!response.ok || !body?.success) throw new Error(body?.error?.message || "Assistant request failed");
+      const aiReply = body.data.response as string;
       setAiChatHistory((prev) => [...prev, { sender: "ai", text: aiReply }]);
-      setPendingAiAction(actionObj);
+      setPendingAiAction(null);
       setAiSpeechState("idle");
-      // The assistant talks back — voice guidance for the merchant (Sarvam TTS)
       speakAiReply(aiReply);
-    }, 700);
+    } catch {
+      const aiReply = "I could not reach the assistant right now. Please try again in a moment.";
+      setAiChatHistory((prev) => [...prev, { sender: "ai", text: aiReply }]);
+      setPendingAiAction(null);
+      setAiSpeechState("idle");
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? "http://localhost:4000";
 import "./CustomerPortal.css";
 import { Icon } from "../components/icons";
 import { AIMascot, type MascotState } from "../components/AIMascot";
@@ -504,42 +506,29 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     showToast("🎉 Order placed successfully with local merchants!");
   };
 
-  // AI Assistant Chat & Voice Simulation
-  const handleSendAiMessage = (queryText?: string) => {
+  // AI Assistant Chat
+  const handleSendAiMessage = async (queryText?: string) => {
     const q = (queryText || aiInputText).trim();
     if (!q) return;
 
     setAiInputText("");
     setMascotEmotion("thinking");
     setAiChatMessages((prev) => [...prev, { sender: "user", text: q }]);
-
-    window.setTimeout(() => {
-      let aiReply = "Searching nearby local stores for you...";
-      const lower = q.toLowerCase();
-
-      if (lower.includes("rice") || lower.includes("chawal")) {
-        aiReply =
-          "🍚 Best Local Match: Rajesh Kirana (350m away) has 'Basmati Rice 5kg' for ₹480 (In Stock). Gupta Supermarket (800m away) sells it for ₹499. Rajesh Kirana offers faster 15-min delivery!";
-      } else if (lower.includes("oil") || lower.includes("tel")) {
-        aiReply =
-          "🌻 Price Comparison: 'Fortune Sunflower Oil 1L' is ₹145 at Rajesh Kirana (350m). Balaji Traders has 'Gemini Oil 1L' for ₹142 (1.1km away).";
-      } else if (lower.includes("milk") || lower.includes("doodh") || lower.includes("dairy")) {
-        aiReply =
-          "🥛 Sri Krishna Dairy & Bakery (500m away) has fresh morning stock of Amul Milk (₹28) and Malai Paneer (₹110). Open now with free 15-min delivery!";
-      } else if (lower.includes("order") || lower.includes("kahan") || lower.includes("track")) {
-        aiReply =
-          "📦 Your order #KB-ORD-90214 from Rajesh Kirana is currently OUT FOR DELIVERY. Delivery hero is on the way (Estimated: 8 minutes).";
-      } else if (lower.includes("shop") || lower.includes("dukaan") || lower.includes("near")) {
-        aiReply =
-          "📍 Found 5 verified local shops within 1 km: Rajesh Kirana (Grocery), Sri Krishna Dairy (Milk/Bakery), Apollo Pharmacy (Medicine), and Gupta Supermarket. Would you like to view them on the interactive map?";
-      } else {
-        aiReply = `Samajh gaya! Found verified stock across Indiranagar stores for "${q}". You can add items directly to cart or view them on the map.`;
-      }
-
-      setAiChatMessages((prev) => [...prev, { sender: "ai", text: aiReply }]);
+    try {
+      const response = await fetch(`${API_ORIGIN}/api/v1/ai/assistant/message`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role: "customer", message: q, language: "en" }),
+      });
+      const body = await response.json();
+      if (!response.ok || !body?.success) throw new Error(body?.error?.message || "Assistant request failed");
+      setAiChatMessages((prev) => [...prev, { sender: "ai", text: body.data.response }]);
       setMascotEmotion("speaking");
-      window.setTimeout(() => setMascotEmotion("idle"), 2500);
-    }, 600);
+    } catch {
+      setAiChatMessages((prev) => [...prev, { sender: "ai", text: "I could not reach the assistant right now. Please try again in a moment." }]);
+      setMascotEmotion("idle");
+    }
+    window.setTimeout(() => setMascotEmotion("idle"), 2500);
   };
 
   const handleToggleVoiceMic = () => {

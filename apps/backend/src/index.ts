@@ -280,20 +280,16 @@ app.post("/api/v1/ai/assistant/message", async (req, res) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ success: false, error: parsed.error.flatten() });
 
-  // This keeps the backend independent of any specific model provider.
-  const summary = parsed.data.role === "merchant"
-    ? "I can help with sales trends, stock suggestions, and campaign drafts."
-    : "I can help find nearby products, compare prices, and create reservations.";
-
-  res.json({
-    success: true,
-    data: {
-      response: `${summary} You asked: ${parsed.data.message}`,
-      suggestedActions: parsed.data.role === "merchant"
-        ? ["get_inventory", "get_merchant_sales", "generate_offer"]
-        : ["search_nearby_products", "compare_prices", "create_reservation"]
-    }
-  });
+  try {
+    const upstream = await fetch(`${AI_SERVICE_URL}/v1/assistant/message`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(parsed.data),
+    });
+    await forwardToAiService(upstream, res);
+  } catch {
+    res.status(502).json({ success: false, error: { code: "ai_service_down", message: "AI service unreachable" } });
+  }
 });
 
 // ─────────────────────────────────────────────────────────────
