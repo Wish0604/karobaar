@@ -801,12 +801,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "dashboard" ? "active" : ""}`}
             onClick={() => setActiveModule("dashboard")}
-            title="Dashboard"
+            title={sidebarExpanded ? "" : "Dashboard"}
           >
             {sidebarExpanded && <span className="mp-nav-num">01</span>}
             <span className="mp-nav-icon"><Icon name="chart" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Dashboard</span>}
-            {!sidebarExpanded && <span className="mp-nav-tooltip">Dashboard</span>}
           </button>
 
           {/* 02 Products */}
@@ -814,15 +813,12 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "products" ? "active" : ""}`}
             onClick={() => setActiveModule("products")}
-            title="Products"
+            title={sidebarExpanded ? "" : `Products (${products.length})`}
           >
             {sidebarExpanded && <span className="mp-nav-num">02</span>}
             <span className="mp-nav-icon"><Icon name="package" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Products</span>}
             <span className="mp-nav-badge">{products.length}</span>
-            {!sidebarExpanded && (
-              <span className="mp-nav-tooltip">Products ({products.length})</span>
-            )}
           </button>
 
           {/* 03 Orders */}
@@ -830,7 +826,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "orders" ? "active" : ""}`}
             onClick={() => setActiveModule("orders")}
-            title="Orders"
+            title={sidebarExpanded ? "" : `Orders (${orders.filter((o) => o.status === "new").length})`}
           >
             {sidebarExpanded && <span className="mp-nav-num">03</span>}
             <span className="mp-nav-icon"><Icon name="bag" size={20} strokeWidth={2} /></span>
@@ -838,9 +834,6 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             <span className="mp-nav-badge">
               {orders.filter((o) => o.status === "new").length}
             </span>
-            {!sidebarExpanded && (
-              <span className="mp-nav-tooltip">Orders ({orders.filter((o) => o.status === "new").length})</span>
-            )}
           </button>
 
           {/* 04 Inventory */}
@@ -848,12 +841,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "inventory" ? "active" : ""}`}
             onClick={() => setActiveModule("inventory")}
-            title="Inventory"
+            title={sidebarExpanded ? "" : "Inventory"}
           >
             {sidebarExpanded && <span className="mp-nav-num">04</span>}
             <span className="mp-nav-icon"><Icon name="clipboard" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Inventory</span>}
-            {!sidebarExpanded && <span className="mp-nav-tooltip">Inventory</span>}
           </button>
 
           {/* 05 Payments */}
@@ -861,12 +853,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "payments" ? "active" : ""}`}
             onClick={() => setActiveModule("payments")}
-            title="Payments"
+            title={sidebarExpanded ? "" : "Payments"}
           >
             {sidebarExpanded && <span className="mp-nav-num">05</span>}
             <span className="mp-nav-icon"><Icon name="card" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Payments</span>}
-            {!sidebarExpanded && <span className="mp-nav-tooltip">Payments</span>}
           </button>
 
           {/* 06 Customers */}
@@ -874,12 +865,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "customers" ? "active" : ""}`}
             onClick={() => setActiveModule("customers")}
-            title="Customers"
+            title={sidebarExpanded ? "" : "Customers"}
           >
             {sidebarExpanded && <span className="mp-nav-num">06</span>}
             <span className="mp-nav-icon"><Icon name="users" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Customers</span>}
-            {!sidebarExpanded && <span className="mp-nav-tooltip">Customers</span>}
           </button>
 
           {/* 07 Shop Management */}
@@ -887,12 +877,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item ${activeModule === "shop" ? "active" : ""}`}
             onClick={() => setActiveModule("shop")}
-            title="Shop Management"
+            title={sidebarExpanded ? "" : "Shop Management"}
           >
             {sidebarExpanded && <span className="mp-nav-num">07</span>}
             <span className="mp-nav-icon"><Icon name="store" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Shop Management</span>}
-            {!sidebarExpanded && <span className="mp-nav-tooltip">Shop Management</span>}
           </button>
         </nav>
 
@@ -902,12 +891,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             type="button"
             className={`mp-nav-item mp-settings-item ${activeModule === "settings" ? "active" : ""}`}
             onClick={() => setActiveModule("settings")}
-            title="Settings"
+            title={sidebarExpanded ? "" : "Settings"}
           >
             {sidebarExpanded && <span className="mp-nav-num">08</span>}
             <span className="mp-nav-icon"><Icon name="settings" size={20} strokeWidth={2} /></span>
             {sidebarExpanded && <span className="mp-nav-label">Settings</span>}
-            {!sidebarExpanded && <span className="mp-nav-tooltip">Settings</span>}
           </button>
 
           {/* Online Dot / Store Indicator */}

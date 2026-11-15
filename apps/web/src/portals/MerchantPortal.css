@@ -71,7 +71,15 @@
   z-index: 50;
   user-select: none;
   transition: width 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), min-width 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), padding 0.28s ease;
-  overflow: visible;
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mp-sidebar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .mp-sidebar.expanded {
@@ -149,7 +157,15 @@
   width: 100%;
   padding: 6px 0;
   overflow-y: auto;
-  overflow-x: visible;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mp-sidebar-nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .mp-sidebar.expanded .mp-sidebar-nav {
@@ -228,42 +244,6 @@
   font-size: 0.88rem;
   font-weight: 600;
   text-align: left;
-}
-
-/* Tooltip on Hover in Compact Mode */
-.mp-nav-tooltip {
-  position: absolute;
-  left: calc(100% + 14px);
-  top: 50%;
-  transform: translateY(-50%) translateX(-6px);
-  background: #1e293b;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: all 0.16s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  z-index: 999;
-}
-
-.mp-nav-tooltip::before {
-  content: "";
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent #1e293b transparent transparent;
-}
-
-.mp-nav-item:hover .mp-nav-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
 }
 
 /* Notification Badge */
