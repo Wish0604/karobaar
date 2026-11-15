@@ -41,6 +41,10 @@ function bootSdk() {
         },
       });
 
+      // Explicitly open the subscription prompt on localhost. Without this,
+      // a browser can load the SDK successfully but never create a player.
+      await OneSignal.Slidedown?.promptPush?.();
+
       // Deep link: notifications carry data.url — open it on click.
       OneSignal.Notifications.addNotificationClickListener?.((event: any) => {
         const url = event?.notification?.launchURL || event?.notification?.url || event?.notification?.data?.url;
