@@ -5,6 +5,8 @@ export interface UserSession {
   userId: string;
   name: string;
   phone: string;
+  email?: string;
+  avatar?: string;
   storeName?: string;
   category?: string;
   location?: string;

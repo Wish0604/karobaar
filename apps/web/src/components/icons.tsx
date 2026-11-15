@@ -12,7 +12,7 @@ export type IconName =
   | "x" | "check" | "checkCircle" | "alert" | "ban" | "arrowRight" | "trendingUp"
   | "lightbulb" | "megaphone" | "upload" | "printer" | "receipt" | "camera" | "pen"
   | "link" | "qr" | "smartphone" | "truck" | "palette" | "star" | "heart" | "eye"
-  | "lock" | "globe" | "message" | "logout" | "wallet" | "shieldCheck" | "pin"
+  | "lock" | "globe" | "message" | "mail" | "logout" | "wallet" | "shieldCheck" | "pin"
   | "wheat" | "droplet" | "bowl" | "noodle" | "cookie" | "milk" | "salt" | "soap"
   | "bank" | "download" | "clock" | "move" | "keyboard";
 
@@ -352,6 +352,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+  mail: (
+    <>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </>
+  ),
   logout: (
     <>
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

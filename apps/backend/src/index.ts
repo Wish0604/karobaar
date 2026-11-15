@@ -19,7 +19,12 @@ app.get("/health", (_req, res) => {
 });
 
 app.post("/api/v1/auth/send-otp", (req, res) => {
-  const schema = z.object({ phone: z.string().min(10) });
+  const schema = z.object({
+    phone: z.string().min(10).optional(),
+    email: z.string().email().optional(),
+  }).refine((data) => data.phone || data.email, {
+    message: "Either mobile number or email address is required",
+  });
   const result = schema.safeParse(req.body);
   if (!result.success) return res.status(400).json({ success: false, error: result.error.flatten() });
 
@@ -27,7 +32,13 @@ app.post("/api/v1/auth/send-otp", (req, res) => {
 });
 
 app.post("/api/v1/auth/verify-otp", (req, res) => {
-  const schema = z.object({ otpSessionId: z.string(), otp: z.string().length(6), role: z.enum(["customer", "merchant", "admin"]) });
+  const schema = z.object({
+    otpSessionId: z.string(),
+    otp: z.string().length(6),
+    role: z.enum(["customer", "merchant", "admin"]),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+  });
   const result = schema.safeParse(req.body);
   if (!result.success) return res.status(400).json({ success: false, error: result.error.flatten() });
 
@@ -36,7 +47,39 @@ app.post("/api/v1/auth/verify-otp", (req, res) => {
     data: {
       accessToken: "demo-access-token",
       refreshToken: "demo-refresh-token",
-      user: { id: "u_demo", role: result.data.role }
+      user: {
+        id: "u_demo",
+        role: result.data.role,
+        phone: result.data.phone,
+        email: result.data.email,
+      }
+    }
+  });
+});
+
+app.post("/api/v1/auth/google", (req, res) => {
+  const schema = z.object({
+    email: z.string().email(),
+    name: z.string().min(1),
+    role: z.enum(["customer", "merchant", "admin"]).default("customer"),
+    googleId: z.string().optional(),
+    avatar: z.string().optional(),
+  });
+  const result = schema.safeParse(req.body);
+  if (!result.success) return res.status(400).json({ success: false, error: result.error.flatten() });
+
+  res.json({
+    success: true,
+    data: {
+      accessToken: "demo-google-access-token",
+      refreshToken: "demo-google-refresh-token",
+      user: {
+        id: `u_google_${Date.now()}`,
+        name: result.data.name,
+        email: result.data.email,
+        role: result.data.role,
+        avatar: result.data.avatar,
+      }
     }
   });
 });

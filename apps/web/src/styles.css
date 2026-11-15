@@ -771,6 +771,29 @@ input::placeholder {
   border-radius: 0 10px 10px 0;
 }
 
+.email-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
+
+.email-input-icon {
+  background: rgba(226, 232, 240, 0.85);
+  border: 1.5px solid rgba(148, 163, 184, 0.5);
+  border-right: none;
+  padding: 11px 14px;
+  border-radius: 10px 0 0 10px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.email-input-wrapper input {
+  border-radius: 0 10px 10px 0;
+  width: 100%;
+}
+
 /* OTP Controls */
 .otp-sent-banner {
   display: flex;
@@ -874,45 +897,278 @@ input::placeholder {
   padding: 4px 14px;
 }
 
-/* Voice Login Button */
-.btn-voice-login {
+/* Alternative & Google Auth */
+.login-alt-auth-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-google-login {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   width: 100%;
   padding: 12px 18px;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-google-login:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+  transform: translateY(-1px);
+}
+
+.btn-alt-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 18px;
   border: 1.5px solid rgba(148, 163, 184, 0.4);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.35);
+  color: #1e293b;
+  font-size: 0.88rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-voice-login:hover {
-  background: rgba(235, 245, 255, 0.55);
+.btn-alt-auth:hover {
+  background: rgba(235, 245, 255, 0.65);
   border-color: rgba(0, 89, 178, 0.4);
-  box-shadow: 0 4px 14px rgba(0, 51, 102, 0.1);
 }
 
-.voice-mic-icon {
-  font-size: 1.4rem;
+/* Google Account Chooser Modal */
+.google-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
-.voice-login-text {
+.google-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 24px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.28);
+  position: relative;
   display: flex;
   flex-direction: column;
-  text-align: left;
+  gap: 18px;
+  animation: googleModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.voice-login-text strong {
-  font-size: 0.92rem;
+@keyframes googleModalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.google-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.google-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.google-modal-close:hover {
+  background: #f1f5f9;
   color: #0f172a;
 }
 
-.voice-login-text small {
-  font-size: 0.76rem;
+.google-modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.google-modal-subtitle {
+  font-size: 0.86rem;
   color: #64748b;
+  margin: 0;
+}
+
+.google-account-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.google-account-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: none;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+  width: 100%;
+}
+
+.google-account-item:last-child {
+  border-bottom: none;
+}
+
+.google-account-item:hover {
+  background: #f8fafc;
+}
+
+.google-account-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #003366;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.google-account-avatar.customer-avatar {
+  background: #0284c7;
+}
+
+.google-account-avatar.custom-avatar {
+  background: #475569;
+}
+
+.google-account-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.google-account-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.google-account-email {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.google-account-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.google-account-badge.customer-badge {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.google-custom-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.google-custom-box input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+}
+
+.google-custom-role-row {
+  display: flex;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.google-custom-role-row button {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.google-custom-role-row button.active {
+  background: #003366;
+  color: #ffffff;
+  border-color: #003366;
+}
+
+.btn-google-custom-submit {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #003366;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-google-custom-submit:hover {
+  background: #002244;
+}
+
+.google-modal-footer {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* Quick Demo Links (Login Tab) */
