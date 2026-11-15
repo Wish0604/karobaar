@@ -249,6 +249,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 }) => {
   // Navigation State
   const [activeModule, setActiveModule] = useState<MerchantModule>("dashboard");
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   // Core Data States
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
@@ -766,110 +767,153 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   return (
     <div className="merchant-portal-root">
       {/* ─────────────────────────────────────────────────────────────
-         LEFT YELLOW NAVIGATION SIDEBAR (Modules 01 - 10)
+         LEFT YELLOW NAVIGATION SIDEBAR (Layout matching reference blueprint)
          ───────────────────────────────────────────────────────────── */}
-      <aside className="mp-sidebar">
-        <div className="mp-sidebar-header">
-          <div className="mp-brand-logo-badge">K</div>
-          <div className="mp-brand-title">
-            <span className="mp-brand-name">KAROBAAR</span>
-            <span className="mp-portal-tag">Merchant Portal</span>
-          </div>
+      <aside className={`mp-sidebar ${sidebarExpanded ? "expanded" : "compact"}`}>
+        {/* Top Header / Menu Bar Toggle */}
+        <div className="mp-sidebar-top">
+          <button
+            type="button"
+            className="mp-sidebar-toggle-btn"
+            onClick={() => setSidebarExpanded(!sidebarExpanded)}
+            title={sidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
+            aria-label="Toggle Navigation Sidebar"
+          >
+            {/* The exact two-bar menu icon from reference image */}
+            <svg width="22" height="15" viewBox="0 0 22 15" fill="currentColor">
+              <rect y="1.5" width="22" height="2.8" rx="1.4" />
+              <rect y="10.5" width="22" height="2.8" rx="1.4" />
+            </svg>
+          </button>
+
+          {sidebarExpanded && (
+            <div className="mp-brand-title">
+              <span className="mp-brand-name">KAROBAAR</span>
+              <span className="mp-portal-tag">Merchant Portal</span>
+            </div>
+          )}
         </div>
 
+        {/* Navigation Items (01 - 07) */}
         <nav className="mp-sidebar-nav">
+          {/* 01 Dashboard */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "dashboard" ? "active" : ""}`}
             onClick={() => setActiveModule("dashboard")}
+            title="Dashboard"
           >
-            <span className="mp-nav-num">01</span>
-            <span className="mp-nav-icon"><Icon name="chart" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Dashboard</span>
+            {sidebarExpanded && <span className="mp-nav-num">01</span>}
+            <span className="mp-nav-icon"><Icon name="chart" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Dashboard</span>}
+            {!sidebarExpanded && <span className="mp-nav-tooltip">Dashboard</span>}
           </button>
 
+          {/* 02 Products */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "products" ? "active" : ""}`}
             onClick={() => setActiveModule("products")}
+            title="Products"
           >
-            <span className="mp-nav-num">02</span>
-            <span className="mp-nav-icon"><Icon name="package" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Products</span>
+            {sidebarExpanded && <span className="mp-nav-num">02</span>}
+            <span className="mp-nav-icon"><Icon name="package" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Products</span>}
             <span className="mp-nav-badge">{products.length}</span>
+            {!sidebarExpanded && (
+              <span className="mp-nav-tooltip">Products ({products.length})</span>
+            )}
           </button>
 
+          {/* 03 Orders */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "orders" ? "active" : ""}`}
             onClick={() => setActiveModule("orders")}
+            title="Orders"
           >
-            <span className="mp-nav-num">03</span>
-            <span className="mp-nav-icon"><Icon name="bag" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Orders</span>
+            {sidebarExpanded && <span className="mp-nav-num">03</span>}
+            <span className="mp-nav-icon"><Icon name="bag" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Orders</span>}
             <span className="mp-nav-badge">
               {orders.filter((o) => o.status === "new").length}
             </span>
+            {!sidebarExpanded && (
+              <span className="mp-nav-tooltip">Orders ({orders.filter((o) => o.status === "new").length})</span>
+            )}
           </button>
 
+          {/* 04 Inventory */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "inventory" ? "active" : ""}`}
             onClick={() => setActiveModule("inventory")}
+            title="Inventory"
           >
-            <span className="mp-nav-num">04</span>
-            <span className="mp-nav-icon"><Icon name="clipboard" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Inventory</span>
+            {sidebarExpanded && <span className="mp-nav-num">04</span>}
+            <span className="mp-nav-icon"><Icon name="clipboard" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Inventory</span>}
+            {!sidebarExpanded && <span className="mp-nav-tooltip">Inventory</span>}
           </button>
 
+          {/* 05 Payments */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "payments" ? "active" : ""}`}
             onClick={() => setActiveModule("payments")}
+            title="Payments"
           >
-            <span className="mp-nav-num">05</span>
-            <span className="mp-nav-icon"><Icon name="card" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Payments</span>
+            {sidebarExpanded && <span className="mp-nav-num">05</span>}
+            <span className="mp-nav-icon"><Icon name="card" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Payments</span>}
+            {!sidebarExpanded && <span className="mp-nav-tooltip">Payments</span>}
           </button>
 
+          {/* 06 Customers */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "customers" ? "active" : ""}`}
             onClick={() => setActiveModule("customers")}
+            title="Customers"
           >
-            <span className="mp-nav-num">06</span>
-            <span className="mp-nav-icon"><Icon name="users" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Customers</span>
+            {sidebarExpanded && <span className="mp-nav-num">06</span>}
+            <span className="mp-nav-icon"><Icon name="users" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Customers</span>}
+            {!sidebarExpanded && <span className="mp-nav-tooltip">Customers</span>}
           </button>
 
+          {/* 07 Shop Management */}
           <button
             type="button"
             className={`mp-nav-item ${activeModule === "shop" ? "active" : ""}`}
             onClick={() => setActiveModule("shop")}
+            title="Shop Management"
           >
-            <span className="mp-nav-num">07</span>
-            <span className="mp-nav-icon"><Icon name="store" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Shop Management</span>
-          </button>
-
-          <button
-            type="button"
-            className={`mp-nav-item ${activeModule === "settings" ? "active" : ""}`}
-            onClick={() => setActiveModule("settings")}
-          >
-            <span className="mp-nav-num">08</span>
-            <span className="mp-nav-icon"><Icon name="settings" size={19} strokeWidth={1.8} /></span>
-            <span className="mp-nav-label">Settings</span>
+            {sidebarExpanded && <span className="mp-nav-num">07</span>}
+            <span className="mp-nav-icon"><Icon name="store" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Shop Management</span>}
+            {!sidebarExpanded && <span className="mp-nav-tooltip">Shop Management</span>}
           </button>
         </nav>
 
-        <div className="mp-sidebar-footer">
-          <div className="mp-store-mini-card">
+        {/* Bottom Pinned Settings & Status (Matching Hex-Nut in Reference Image) */}
+        <div className="mp-sidebar-bottom">
+          <button
+            type="button"
+            className={`mp-nav-item mp-settings-item ${activeModule === "settings" ? "active" : ""}`}
+            onClick={() => setActiveModule("settings")}
+            title="Settings"
+          >
+            {sidebarExpanded && <span className="mp-nav-num">08</span>}
+            <span className="mp-nav-icon"><Icon name="settings" size={20} strokeWidth={2} /></span>
+            {sidebarExpanded && <span className="mp-nav-label">Settings</span>}
+            {!sidebarExpanded && <span className="mp-nav-tooltip">Settings</span>}
+          </button>
+
+          {/* Online Dot / Store Indicator */}
+          <div className="mp-sidebar-status-dot" title={`${shopName} • Online`}>
             <span className="mp-store-dot" />
-            <div className="mp-store-mini-info">
-              <span className="mp-store-mini-name">{shopName}</span>
-              <span className="mp-store-mini-status">Store Active • Online</span>
-            </div>
+            {sidebarExpanded && <span className="mp-status-text">Online</span>}
           </div>
         </div>
       </aside>
