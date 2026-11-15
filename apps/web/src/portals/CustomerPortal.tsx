@@ -4,6 +4,7 @@ const API_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? "http://localhost:4000";
 import "./CustomerPortal.css";
 import { Icon } from "../components/icons";
 import { AIMascot, type MascotState } from "../components/AIMascot";
+import { AssistantMessageText } from "../components/AssistantMessageText";
 import type { UserSession } from "../types";
 import { assistantVoiceQueries, languageLocale, t } from "../i18n";
 
@@ -1107,7 +1108,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   className={`cp-ai-bubble ${msg.sender === "user" ? "user" : "ai"}`}
                 >
                   <strong>{msg.sender === "user" ? "You: " : "🤖 Karobaar AI: "}</strong>
-                  {msg.text}
+                  <AssistantMessageText text={msg.text} />
                 </div>
               ))}
             </div>

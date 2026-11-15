@@ -5,8 +5,9 @@ import { Icon, type IconName } from "../components/icons";
 import { AIMascot } from "../components/AIMascot";
 import "./MerchantPortal.css";
 import { AiAssistantWidget } from "../components/AiAssistantWidget";
+import { stripAssistantMarkup } from "../components/AssistantMessageText";
 import type { UserSession, ProductItem } from "../types";
-import { languageLocale, t } from "../i18n";
+import { assistantVoiceQueries, languageLocale, t } from "../i18n";
 
 export interface MerchantPortalProps {
   session: UserSession;
@@ -509,6 +510,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
   // Speak a reply aloud: Sarvam Bulbul voice first, browser TTS as fallback
   const speakAiReply = async (text: string) => {
+    const spokenText = stripAssistantMarkup(text);
     if (aiVoiceMutedRef.current) return;
     stopAiSpeaking();
     setIsAiSpeaking(true);
@@ -518,7 +520,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
         const res = await fetch("/api/v1/ai/voice/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, languageCode: detectVoiceLanguage(text) }),
+          body: JSON.stringify({ text: spokenText, languageCode: detectVoiceLanguage(spokenText) }),
         });
         const json = await res.json();
         const audioBase64 = json?.success ? (json?.data?.audioBase64 as string | undefined) : undefined;
@@ -528,7 +530,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           audio.onended = () => setIsAiSpeaking(false);
           audio.onerror = () => {
             ttsAudioRef.current = null;
-            browserSpeak(text);
+            browserSpeak(spokenText);
           };
           try {
             await audio.play();
@@ -541,7 +543,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
         // Sarvam TTS unreachable → browser TTS fallback
       }
     }
-    browserSpeak(text);
+    browserSpeak(spokenText);
   };
 
   const handleToggleAiMute = () => {
@@ -585,11 +587,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
     if (!SpeechRecognitionCtor) {
       // Demo voice simulation for environments without mic/speech APIs
-      showToast("Listening... Speak in Hindi or English");
+      showToast(`${t(uiLanguage, "listening")} ${languageLocale(uiLanguage)}`);
       voiceMaxTimerRef.current = window.setTimeout(() => {
         voiceMaxTimerRef.current = null;
         setIsAiListening(false);
-        handleSendAiMessage("Aaj ki sales aur low stock items batao");
+        handleSendAiMessage(assistantVoiceQueries[uiLanguage]);
       }, 3500);
       return;
     }
@@ -605,7 +607,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
       onend: (() => void) | null;
     })();
 
-    recognition.lang = "en-IN";
+    recognition.lang = languageLocale(uiLanguage);
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
@@ -628,7 +630,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
       showToast("Mic unavailable here — running demo voice");
       voiceMaxTimerRef.current = window.setTimeout(() => {
         voiceMaxTimerRef.current = null;
-        handleSendAiMessage("Aaj ki sales aur low stock items batao");
+        handleSendAiMessage(assistantVoiceQueries[uiLanguage]);
       }, 1200);
     };
 

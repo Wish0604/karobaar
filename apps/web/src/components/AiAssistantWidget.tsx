@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "./icons";
 import { AIMascot, type MascotState } from "./AIMascot";
+import { AssistantMessageText } from "./AssistantMessageText";
 import "./AiAssistantWidget.css";
 
 export interface AiChatMessage {
@@ -252,7 +253,7 @@ export const AiAssistantWidget: React.FC<AiAssistantWidgetProps> = ({
         {chatHistory.map((msg, index) => (
           <div key={index} className={`aiw-bubble ${msg.sender === "user" ? "aiw-bubble-user" : "aiw-bubble-ai"}`}>
             {msg.sender === "ai" && <span className="aiw-bubble-avatar"><AIMascot headOnly state="idle" size={22} /></span>}
-            <span className="aiw-bubble-text">{msg.text}</span>
+            <span className="aiw-bubble-text"><AssistantMessageText text={msg.text} /></span>
           </div>
         ))}
 

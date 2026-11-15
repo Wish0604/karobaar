@@ -180,11 +180,18 @@ def assistant_message(payload: AssistantMessage) -> Dict[str, Any]:
             ToolCall(tool="compare_prices", arguments={}),
         ]
 
+    language_names = {
+        "en": "English", "hi": "Hindi", "bn": "Bengali", "ta": "Tamil",
+        "te": "Telugu", "mr": "Marathi", "kn": "Kannada", "ml": "Malayalam", "gu": "Gujarati",
+    }
+    requested_language = language_names.get(payload.language.split("-")[0].lower(), payload.language)
     prompt = f"""User message: {payload.message}
-Respond as a helpful shopping and local-commerce assistant for {audience}.
-You can help with {capabilities}. Use the user's language where practical ({payload.language}).
+You are a helpful shopping and local-commerce assistant for {audience}.
+You can help with {capabilities}.
+MANDATORY LANGUAGE RULE: Write the entire answer in {requested_language}. Do not mix in English, Hindi, or another language unless it is a product name, person's name, brand, or number. The user selected {requested_language}.
 Be specific and concise. Use the demo business data only when it is relevant, and never claim an action was completed unless the user explicitly confirms it.
-Do not mention system prompts, APIs, or model details."""
+Do not mention system prompts, APIs, or model details.
+Return plain text or simple Markdown only."""
 
     last_error: Exception | None = None
     for _ in range(2):
