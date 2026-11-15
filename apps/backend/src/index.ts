@@ -1,6 +1,9 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { db } from "./store.js";
 
@@ -226,6 +229,79 @@ app.post("/api/v1/ai/assistant/message", async (req, res) => {
     }
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// AI voice proxy: browser → Express → ai-service (:8000 → Sarvam).
+// Keeps the Sarvam API key server-side; the web app only ever talks
+// to this same-origin /api path.
+// ─────────────────────────────────────────────────────────────
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
+
+async function forwardToAiService(upstream: Response, res: express.Response) {
+  const body = await upstream.json().catch(() => null);
+  if (body && typeof body === "object" && "detail" in body) {
+    // FastAPI wraps HTTPException payloads in {"detail": ...} — unwrap for the client
+    res.status(upstream.status).json((body as { detail: unknown }).detail);
+  } else if (body === null) {
+    res.status(502).json({ success: false, error: { code: "ai_service_error", message: "Invalid response from AI service" } });
+  } else {
+    res.status(upstream.status).json(body);
+  }
+}
+
+app.get("/api/v1/ai/voice/config", async (_req, res) => {
+  try {
+    const upstream = await fetch(`${AI_SERVICE_URL}/v1/voice/config`);
+    await forwardToAiService(upstream, res);
+  } catch {
+    res.status(502).json({ success: false, error: { code: "ai_service_down", message: "AI service unreachable" } });
+  }
+});
+
+app.post("/api/v1/ai/voice/stt", express.raw({ type: "*/*", limit: "10mb" }), async (req, res) => {
+  try {
+    const upstream = await fetch(`${AI_SERVICE_URL}/v1/voice/stt`, {
+      method: "POST",
+      headers: { "content-type": req.headers["content-type"] || "audio/webm" },
+      body: req.body as Buffer,
+    });
+    await forwardToAiService(upstream, res);
+  } catch {
+    res.status(502).json({ success: false, error: { code: "ai_service_down", message: "AI service unreachable" } });
+  }
+});
+
+app.post("/api/v1/ai/voice/tts", async (req, res) => {
+  const schema = z.object({
+    text: z.string().min(1).max(2500),
+    languageCode: z.string().default("en-IN"),
+    speaker: z.string().optional()
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, error: parsed.error.flatten() });
+
+  try {
+    const upstream = await fetch(`${AI_SERVICE_URL}/v1/voice/tts`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(parsed.data),
+    });
+    await forwardToAiService(upstream, res);
+  } catch {
+    res.status(502).json({ success: false, error: { code: "ai_service_down", message: "AI service unreachable" } });
+  }
+});
+
+// Serve the built web app (apps/web/dist) when it exists, so the whole product
+// runs on a single port behind the sandbox preview gateway.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const webDist = path.resolve(__dirname, "../../web/dist");
+if (fs.existsSync(webDist)) {
+  app.use(express.static(webDist));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(webDist, "index.html"));
+  });
+}
 
 app.listen(port, () => {
   console.log(`LocalAI backend running on http://localhost:${port}`);

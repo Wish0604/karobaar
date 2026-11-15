@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Icon, type IconName } from "../components/icons";
+import { AIMascot } from "../components/AIMascot";
 import "./MerchantPortal.css";
+import { AiAssistantWidget } from "../components/AiAssistantWidget";
 import type { UserSession, ProductItem } from "../types";
 
 export interface MerchantPortalProps {
@@ -11,7 +14,7 @@ export interface MerchantPortalProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA TYPES & SCHEMAS FOR ALL 10 MODULES
+// DATA TYPES & SCHEMAS FOR ALL 9 MODULES
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type MerchantModule =
@@ -21,9 +24,7 @@ export type MerchantModule =
   | "inventory"
   | "payments"
   | "customers"
-  | "growth"
   | "shop"
-  | "ai"
   | "settings";
 
 export type OrderStatus =
@@ -73,17 +74,6 @@ export interface StockHistoryRecord {
   by: string;
 }
 
-export interface OfferRecord {
-  id: string;
-  name: string;
-  code: string;
-  discountType: "percentage" | "fixed";
-  discountValue: number;
-  minOrder: number;
-  status: "Active" | "Expired" | "Draft";
-  validTill: string;
-}
-
 export interface TransactionRecord {
   id: string;
   orderId: string;
@@ -99,14 +89,14 @@ export interface TransactionRecord {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const INITIAL_PRODUCTS = [
-  { id: "prd_1", name: "Tata Salt Vacuum Evaporated (1kg)", category: "Grocery", price: 28, mrp: 30, quantity: 48, threshold: 10, status: "Active", icon: "🧂" },
-  { id: "prd_2", name: "Aashirvaad Shudh Chakki Atta (5kg)", category: "Grocery", price: 275, mrp: 295, quantity: 6, threshold: 10, status: "Low Stock", icon: "🌾" },
-  { id: "prd_3", name: "Fortune Sunlite Oil (1L)", category: "Grocery", price: 145, mrp: 160, quantity: 32, threshold: 10, status: "Active", icon: "🌻" },
-  { id: "prd_4", name: "Amul Taaza Homogenised Milk (500ml)", category: "Dairy", price: 28, mrp: 28, quantity: 0, threshold: 5, status: "Out of Stock", icon: "🥛" },
-  { id: "prd_5", name: "Maggi 2-Minute Masala Noodles (70g)", category: "Snacks", price: 14, mrp: 14, quantity: 60, threshold: 15, status: "Active", icon: "🍜" },
-  { id: "prd_6", name: "Basmati Rice Rozana Premium (5kg)", category: "Grocery", price: 480, mrp: 520, quantity: 9, threshold: 10, status: "Low Stock", icon: "🍚" },
-  { id: "prd_7", name: "Parle-G Gold Glucose Biscuits (250g)", category: "Snacks", price: 25, mrp: 25, quantity: 80, threshold: 20, status: "Active", icon: "🍪" },
-  { id: "prd_8", name: "Surf Excel Easy Wash Detergent (1kg)", category: "Cleaning", price: 140, mrp: 155, quantity: 22, threshold: 8, status: "Active", icon: "🧼" },
+  { id: "prd_1", name: "Tata Salt Vacuum Evaporated (1kg)", category: "Grocery", price: 28, mrp: 30, quantity: 48, threshold: 10, status: "Active", icon: "salt" },
+  { id: "prd_2", name: "Aashirvaad Shudh Chakki Atta (5kg)", category: "Grocery", price: 275, mrp: 295, quantity: 6, threshold: 10, status: "Low Stock", icon: "wheat" },
+  { id: "prd_3", name: "Fortune Sunlite Oil (1L)", category: "Grocery", price: 145, mrp: 160, quantity: 32, threshold: 10, status: "Active", icon: "droplet" },
+  { id: "prd_4", name: "Amul Taaza Homogenised Milk (500ml)", category: "Dairy", price: 28, mrp: 28, quantity: 0, threshold: 5, status: "Out of Stock", icon: "milk" },
+  { id: "prd_5", name: "Maggi 2-Minute Masala Noodles (70g)", category: "Snacks", price: 14, mrp: 14, quantity: 60, threshold: 15, status: "Active", icon: "noodle" },
+  { id: "prd_6", name: "Basmati Rice Rozana Premium (5kg)", category: "Grocery", price: 480, mrp: 520, quantity: 9, threshold: 10, status: "Low Stock", icon: "bowl" },
+  { id: "prd_7", name: "Parle-G Gold Glucose Biscuits (250g)", category: "Snacks", price: 25, mrp: 25, quantity: 80, threshold: 20, status: "Active", icon: "cookie" },
+  { id: "prd_8", name: "Surf Excel Easy Wash Detergent (1kg)", category: "Cleaning", price: 140, mrp: 155, quantity: 22, threshold: 8, status: "Active", icon: "soap" },
 ];
 
 const INITIAL_ORDERS: OrderRecord[] = [
@@ -117,9 +107,9 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerAddress: "Flat 402, Royal Palms, Indiranagar, Bengaluru",
     itemsCount: 3,
     items: [
-      { name: "Tata Salt (1kg)", qty: 2, price: 28, icon: "🧂" },
-      { name: "Aashirvaad Atta (5kg)", qty: 1, price: 275, icon: "🌾" },
-      { name: "Fortune Oil (1L)", qty: 1, price: 145, icon: "🌻" },
+      { name: "Tata Salt (1kg)", qty: 2, price: 28, icon: "salt" },
+      { name: "Aashirvaad Atta (5kg)", qty: 1, price: 275, icon: "wheat" },
+      { name: "Fortune Oil (1L)", qty: 1, price: 145, icon: "droplet" },
     ],
     totalAmount: 476,
     paymentMethod: "UPI",
@@ -135,9 +125,9 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerAddress: "12, 100ft Road, Indiranagar, Bengaluru",
     itemsCount: 5,
     items: [
-      { name: "Basmati Rice (5kg)", qty: 1, price: 480, icon: "🍚" },
-      { name: "Fortune Oil (1L)", qty: 2, price: 145, icon: "🌻" },
-      { name: "Maggi Noodles (70g)", qty: 6, price: 14, icon: "🍜" },
+      { name: "Basmati Rice (5kg)", qty: 1, price: 480, icon: "bowl" },
+      { name: "Fortune Oil (1L)", qty: 2, price: 145, icon: "droplet" },
+      { name: "Maggi Noodles (70g)", qty: 6, price: 14, icon: "noodle" },
     ],
     totalAmount: 854,
     paymentMethod: "Paytm",
@@ -153,8 +143,8 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerAddress: "Counter Pickup at Store",
     itemsCount: 2,
     items: [
-      { name: "Parle-G Biscuits", qty: 4, price: 25, icon: "🍪" },
-      { name: "Tata Salt (1kg)", qty: 1, price: 28, icon: "🧂" },
+      { name: "Parle-G Biscuits", qty: 4, price: 25, icon: "cookie" },
+      { name: "Tata Salt (1kg)", qty: 1, price: 28, icon: "salt" },
     ],
     totalAmount: 128,
     paymentMethod: "COD",
@@ -170,8 +160,8 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerAddress: "House 55, 4th Cross, HAL 2nd Stage, Bengaluru",
     itemsCount: 4,
     items: [
-      { name: "Surf Excel (1kg)", qty: 2, price: 140, icon: "🧼" },
-      { name: "Basmati Rice (5kg)", qty: 1, price: 480, icon: "🍚" },
+      { name: "Surf Excel (1kg)", qty: 2, price: 140, icon: "soap" },
+      { name: "Basmati Rice (5kg)", qty: 1, price: 480, icon: "bowl" },
     ],
     totalAmount: 760,
     paymentMethod: "UPI",
@@ -186,7 +176,7 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerPhone: "+91 98334 55667",
     customerAddress: "77 Defence Colony, Indiranagar",
     itemsCount: 1,
-    items: [{ name: "Basmati Rice (5kg)", qty: 1, price: 480, icon: "🍚" }],
+    items: [{ name: "Basmati Rice (5kg)", qty: 1, price: 480, icon: "bowl" }],
     totalAmount: 480,
     paymentMethod: "Card",
     paymentStatus: "Paid",
@@ -201,8 +191,8 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerAddress: "Apartment 101, BDA Layout, Bengaluru",
     itemsCount: 6,
     items: [
-      { name: "Aashirvaad Atta (5kg)", qty: 2, price: 275, icon: "🌾" },
-      { name: "Fortune Oil (1L)", qty: 2, price: 145, icon: "🌻" },
+      { name: "Aashirvaad Atta (5kg)", qty: 2, price: 275, icon: "wheat" },
+      { name: "Fortune Oil (1L)", qty: 2, price: 145, icon: "droplet" },
     ],
     totalAmount: 840,
     paymentMethod: "UPI",
@@ -217,7 +207,7 @@ const INITIAL_ORDERS: OrderRecord[] = [
     customerPhone: "+91 98112 23344",
     customerAddress: "Storefront Walk-in Customer",
     itemsCount: 2,
-    items: [{ name: "Tata Salt (1kg)", qty: 1, price: 28, icon: "🧂" }],
+    items: [{ name: "Tata Salt (1kg)", qty: 1, price: 28, icon: "salt" }],
     totalAmount: 28,
     paymentMethod: "UPI",
     paymentStatus: "Paid",
@@ -233,12 +223,6 @@ const INITIAL_CUSTOMERS: CustomerRecord[] = [
   { id: "c_3", name: "Amit Kumar", phone: "+91 98987 66554", address: "Old Airport Road, Bengaluru", totalOrders: 3, totalSpend: 1760, lastOrderDate: "20 Jan 2025", type: "Regular", rating: 4, review: "Fair prices and original branded products." },
   { id: "c_4", name: "Neha Joshi", phone: "+91 98223 34455", address: "HAL 2nd Stage, Bengaluru", totalOrders: 5, totalSpend: 3890, lastOrderDate: "19 Jan 2025", type: "Repeat", rating: 5, review: "Super easy to pay via Paytm QR and get items quickly." },
   { id: "c_5", name: "Vikram Singh", phone: "+91 98334 55667", address: "Defence Colony, Bengaluru", totalOrders: 1, totalSpend: 480, lastOrderDate: "18 Jan 2025", type: "New" },
-];
-
-const INITIAL_OFFERS: OfferRecord[] = [
-  { id: "off_1", name: "Daily Essentials Discount", code: "DAILY10", discountType: "percentage", discountValue: 10, minOrder: 399, status: "Active", validTill: "31 Jan 2025" },
-  { id: "off_2", name: "Weekend Super Saver", code: "WEEKEND50", discountType: "fixed", discountValue: 50, minOrder: 599, status: "Active", validTill: "28 Jan 2025" },
-  { id: "off_3", name: "Free Home Delivery", code: "FREESHIP", discountType: "fixed", discountValue: 30, minOrder: 499, status: "Active", validTill: "15 Feb 2025" },
 ];
 
 const INITIAL_STOCK_HISTORY: StockHistoryRecord[] = [
@@ -270,7 +254,6 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<OrderRecord[]>(INITIAL_ORDERS);
   const [customers, setCustomers] = useState<CustomerRecord[]>(INITIAL_CUSTOMERS);
-  const [offers, setOffers] = useState<OfferRecord[]>(INITIAL_OFFERS);
   const [stockHistory, setStockHistory] = useState<StockHistoryRecord[]>(INITIAL_STOCK_HISTORY);
   const [transactions, setTransactions] = useState<TransactionRecord[]>(INITIAL_TRANSACTIONS);
 
@@ -286,7 +269,6 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState<OrderRecord | null>(null);
   const [showUpdateStockModal, setShowUpdateStockModal] = useState<typeof INITIAL_PRODUCTS[0] | null>(null);
-  const [showCreateOfferModal, setShowCreateOfferModal] = useState(false);
 
   // Orders Sub-Filter
   const [orderFilter, setOrderFilter] = useState<OrderStatus>("all");
@@ -302,6 +284,12 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   ]);
   const [aiInputText, setAiInputText] = useState("");
   const [pendingAiAction, setPendingAiAction] = useState<{ title: string; desc: string; apply: () => void } | null>(null);
+  const [aiWidgetOpen, setAiWidgetOpen] = useState(false);
+  const [aiWidgetExpanded, setAiWidgetExpanded] = useState(false);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const [aiVoiceMuted, setAiVoiceMuted] = useState(false);
+  // null = still checking, true = Sarvam key configured on ai-service, false = browser voice fallback
+  const [sarvamVoiceReady, setSarvamVoiceReady] = useState<boolean | null>(null);
 
   // Stock Adjustment Form State
   const [stockAdjQty, setStockAdjQty] = useState(10);
@@ -315,12 +303,6 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   const [newProdPrice, setNewProdPrice] = useState(100);
   const [newProdMrp, setNewProdMrp] = useState(110);
   const [newProdQty, setNewProdQty] = useState(20);
-
-  // Create Offer Form State
-  const [newOfferName, setNewOfferName] = useState("");
-  const [newOfferCode, setNewOfferCode] = useState("");
-  const [newOfferDisc, setNewOfferDisc] = useState(10);
-  const [newOfferMinOrder, setNewOfferMinOrder] = useState(499);
 
   // Shop Settings State
   const [shopName, setShopName] = useState(session?.storeName || "Rajesh Kirana & Store");
@@ -398,36 +380,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
       quantity: Number(newProdQty),
       threshold: 10,
       status: Number(newProdQty) > 0 ? "Active" : "Out of Stock",
-      icon: newProdCat === "Dairy" ? "🥛" : newProdCat === "Snacks" ? "🍜" : "📦",
+      icon: newProdCat === "Dairy" ? "milk" : newProdCat === "Snacks" ? "noodle" : "package",
     };
 
     setProducts((prev) => [newProd, ...prev]);
     showToast(`"${newProd.name}" added to catalogue!`);
     setShowAddProductModal(false);
     setNewProdName("");
-  };
-
-  // Create Offer submission
-  const handleCreateOfferSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newOfferName.trim() || !newOfferCode.trim()) return;
-
-    const newOff: OfferRecord = {
-      id: `off_${Date.now()}`,
-      name: newOfferName,
-      code: newOfferCode.toUpperCase(),
-      discountType: "percentage",
-      discountValue: Number(newOfferDisc),
-      minOrder: Number(newOfferMinOrder),
-      status: "Active",
-      validTill: "28 Feb 2025",
-    };
-
-    setOffers((prev) => [newOff, ...prev]);
-    showToast(`Offer ${newOff.code} launched successfully!`);
-    setShowCreateOfferModal(false);
-    setNewOfferName("");
-    setNewOfferCode("");
   };
 
   // AI Assistant Chat & Voice Simulation
@@ -464,19 +423,6 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           title: "Launch 'WEEKEND10' (10% Off above ₹399)",
           desc: "Create and broadcast promo to 52 repeat customers on WhatsApp",
           apply: () => {
-            setOffers((prev) => [
-              {
-                id: `off_${Date.now()}`,
-                name: "AI Weekend Specials",
-                code: "WEEKEND10",
-                discountType: "percentage",
-                discountValue: 10,
-                minOrder: 399,
-                status: "Active",
-                validTill: "Weekend Special",
-              },
-              ...prev,
-            ]);
             showToast("Promo 'WEEKEND10' activated!");
           },
         };
@@ -499,21 +445,307 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
       setAiChatHistory((prev) => [...prev, { sender: "ai", text: aiReply }]);
       setPendingAiAction(actionObj);
       setAiSpeechState("idle");
+      // The assistant talks back — voice guidance for the merchant (Sarvam TTS)
+      speakAiReply(aiReply);
     }, 700);
   };
 
-  const handleToggleVoiceMic = () => {
-    if (!isAiListening) {
-      setIsAiListening(true);
-      setAiSpeechState("listening");
-      showToast("🎙️ Listening... Speak in Hindi or English");
-      window.setTimeout(() => {
+  // ─────────────────────────────────────────────────────────────────
+  // Sarvam AI voice pipeline:
+  //   Mic → MediaRecorder → /api/v1/ai/voice/stt (Sarvam Saaras STT)
+  //   Reply → /api/v1/ai/voice/tts (Sarvam Bulbul TTS) → spoken aloud
+  // Fallback chain: Sarvam STT → browser SpeechRecognition → demo voice.
+  // Fallback for speech: Sarvam TTS → browser speechSynthesis.
+  // ─────────────────────────────────────────────────────────────────
+  const speechRecognitionRef = useRef<{ stop: () => void } | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const voiceMaxTimerRef = useRef<number | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const sarvamReadyRef = useRef<boolean | null>(null);
+  const aiVoiceMutedRef = useRef(false);
+
+  // Ask the ai-service (via backend proxy) whether the Sarvam key is configured
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/v1/ai/voice/config")
+      .then((r) => r.json())
+      .then((j) => {
+        const ready = !!(j?.success && j?.data?.sarvamConfigured);
+        if (!cancelled) {
+          sarvamReadyRef.current = ready;
+          setSarvamVoiceReady(ready);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          sarvamReadyRef.current = false;
+          setSarvamVoiceReady(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const detectVoiceLanguage = (text: string) => (/[\u0900-\u097F]/.test(text) ? "hi-IN" : "en-IN");
+
+  const stopAiSpeaking = () => {
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current = null;
+    }
+    try {
+      window.speechSynthesis?.cancel();
+    } catch {
+      /* speechSynthesis unavailable */
+    }
+    setIsAiSpeaking(false);
+  };
+
+  // Browser built-in speech engine — always available fallback for TTS
+  const browserSpeak = (text: string) => {
+    try {
+      const synth = window.speechSynthesis;
+      if (!synth) {
+        setIsAiSpeaking(false);
+        return;
+      }
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = detectVoiceLanguage(text);
+      utterance.onend = () => setIsAiSpeaking(false);
+      utterance.onerror = () => setIsAiSpeaking(false);
+      synth.speak(utterance);
+    } catch {
+      setIsAiSpeaking(false);
+    }
+  };
+
+  // Speak a reply aloud: Sarvam Bulbul voice first, browser TTS as fallback
+  const speakAiReply = async (text: string) => {
+    if (aiVoiceMutedRef.current) return;
+    stopAiSpeaking();
+    setIsAiSpeaking(true);
+
+    if (sarvamReadyRef.current === true) {
+      try {
+        const res = await fetch("/api/v1/ai/voice/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, languageCode: detectVoiceLanguage(text) }),
+        });
+        const json = await res.json();
+        const audioBase64 = json?.success ? (json?.data?.audioBase64 as string | undefined) : undefined;
+        if (audioBase64) {
+          const audio = new Audio(`data:audio/wav;base64,${audioBase64}`);
+          ttsAudioRef.current = audio;
+          audio.onended = () => setIsAiSpeaking(false);
+          audio.onerror = () => {
+            ttsAudioRef.current = null;
+            browserSpeak(text);
+          };
+          try {
+            await audio.play();
+            return;
+          } catch {
+            // autoplay blocked or decode failure → browser TTS
+          }
+        }
+      } catch {
+        // Sarvam TTS unreachable → browser TTS fallback
+      }
+    }
+    browserSpeak(text);
+  };
+
+  const handleToggleAiMute = () => {
+    const next = !aiVoiceMuted;
+    setAiVoiceMuted(next);
+    aiVoiceMutedRef.current = next;
+    if (next) stopAiSpeaking();
+    showToast(next ? "AI voice muted" : "AI voice on — main aapko guide karunga!");
+  };
+
+  const clearVoiceTimers = () => {
+    if (voiceMaxTimerRef.current) {
+      window.clearTimeout(voiceMaxTimerRef.current);
+      voiceMaxTimerRef.current = null;
+    }
+  };
+
+  const releaseMic = () => {
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
+  };
+
+  const stopSarvamRecording = () => {
+    clearVoiceTimers();
+    try {
+      mediaRecorderRef.current?.stop();
+    } catch {
+      releaseMic();
+    }
+    mediaRecorderRef.current = null;
+  };
+
+  // Browser SpeechRecognition fallback (Chrome/Edge; no server key needed)
+  const startBrowserRecognition = () => {
+    setIsAiListening(true);
+    setAiSpeechState("listening");
+
+    const SpeechRecognitionCtor =
+      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionCtor) {
+      // Demo voice simulation for environments without mic/speech APIs
+      showToast("Listening... Speak in Hindi or English");
+      voiceMaxTimerRef.current = window.setTimeout(() => {
+        voiceMaxTimerRef.current = null;
         setIsAiListening(false);
         handleSendAiMessage("Aaj ki sales aur low stock items batao");
       }, 3500);
-    } else {
+      return;
+    }
+
+    const recognition = new (SpeechRecognitionCtor as new () => {
+      lang: string;
+      interimResults: boolean;
+      maxAlternatives: number;
+      start: () => void;
+      stop: () => void;
+      onresult: ((event: { results?: Array<Array<{ transcript?: string }>> }) => void) | null;
+      onerror: (() => void) | null;
+      onend: (() => void) | null;
+    })();
+
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
+      setIsAiListening(false);
+      speechRecognitionRef.current = null;
+      if (transcript) {
+        handleSendAiMessage(transcript);
+      } else {
+        setAiSpeechState("idle");
+        showToast("Kuch sunayi nahi diya — try typing instead");
+      }
+    };
+
+    recognition.onerror = () => {
+      // Microphone unavailable or permission denied: use the demo voice flow
+      setIsAiListening(false);
+      speechRecognitionRef.current = null;
+      showToast("Mic unavailable here — running demo voice");
+      voiceMaxTimerRef.current = window.setTimeout(() => {
+        voiceMaxTimerRef.current = null;
+        handleSendAiMessage("Aaj ki sales aur low stock items batao");
+      }, 1200);
+    };
+
+    recognition.onend = () => setIsAiListening(false);
+    speechRecognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch {
+      recognition.onerror?.();
+    }
+  };
+
+  // Real mic recording → Sarvam Saaras STT (Hindi/English/Indic auto-detect)
+  const startSarvamRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = async () => {
+        clearVoiceTimers();
+        releaseMic();
+        mediaRecorderRef.current = null;
+
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        if (blob.size < 1200) {
+          setIsAiListening(false);
+          setAiSpeechState("idle");
+          showToast("Kuch sunayi nahi diya — phir se boliye ya type karein");
+          return;
+        }
+
+        setAiSpeechState("processing");
+        try {
+          const formData = new FormData();
+          formData.append("file", blob, "voice.webm");
+          const res = await fetch("/api/v1/ai/voice/stt", { method: "POST", body: formData });
+          const json = await res.json();
+          const transcript = json?.success ? ((json?.data?.transcript as string) || "").trim() : "";
+
+          setIsAiListening(false);
+          if (transcript) {
+            handleSendAiMessage(transcript);
+          } else if (json?.error?.code === "sarvam_not_configured") {
+            sarvamReadyRef.current = false;
+            setSarvamVoiceReady(false);
+            showToast("Sarvam voice off — browser voice se boliye");
+            startBrowserRecognition();
+          } else {
+            setAiSpeechState("idle");
+            showToast("Samajh nahi aaya — phir se boliye ya type karein");
+          }
+        } catch {
+          setIsAiListening(false);
+          setAiSpeechState("idle");
+          showToast("Voice service unreachable — try typing instead");
+        }
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      // Safety cap: automatically stop after 10 seconds
+      voiceMaxTimerRef.current = window.setTimeout(() => stopSarvamRecording(), 10000);
+    } catch {
+      // No microphone / permission denied → browser SR → demo
+      setIsAiListening(false);
+      startBrowserRecognition();
+    }
+  };
+
+  const handleToggleVoiceMic = () => {
+    // Barge-in: tapping the mic while the AI talks interrupts the speech
+    if (isAiSpeaking) stopAiSpeaking();
+
+    if (isAiListening) {
       setIsAiListening(false);
       setAiSpeechState("idle");
+      if (mediaRecorderRef.current) {
+        stopSarvamRecording();
+      } else {
+        speechRecognitionRef.current?.stop();
+        speechRecognitionRef.current = null;
+        clearVoiceTimers();
+      }
+      return;
+    }
+
+    setIsAiListening(true);
+    setAiSpeechState("listening");
+    setAiWidgetOpen(true);
+
+    if (sarvamReadyRef.current === true && !!navigator.mediaDevices?.getUserMedia) {
+      startSarvamRecording();
+    } else {
+      startBrowserRecognition();
     }
   };
 
@@ -552,7 +784,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             onClick={() => setActiveModule("dashboard")}
           >
             <span className="mp-nav-num">01</span>
-            <span className="mp-nav-icon">📊</span>
+            <span className="mp-nav-icon"><Icon name="chart" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Dashboard</span>
           </button>
 
@@ -562,7 +794,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             onClick={() => setActiveModule("products")}
           >
             <span className="mp-nav-num">02</span>
-            <span className="mp-nav-icon">📦</span>
+            <span className="mp-nav-icon"><Icon name="package" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Products</span>
             <span className="mp-nav-badge">{products.length}</span>
           </button>
@@ -573,7 +805,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             onClick={() => setActiveModule("orders")}
           >
             <span className="mp-nav-num">03</span>
-            <span className="mp-nav-icon">🛍️</span>
+            <span className="mp-nav-icon"><Icon name="bag" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Orders</span>
             <span className="mp-nav-badge">
               {orders.filter((o) => o.status === "new").length}
@@ -586,7 +818,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             onClick={() => setActiveModule("inventory")}
           >
             <span className="mp-nav-num">04</span>
-            <span className="mp-nav-icon">📋</span>
+            <span className="mp-nav-icon"><Icon name="clipboard" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Inventory</span>
           </button>
 
@@ -596,7 +828,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             onClick={() => setActiveModule("payments")}
           >
             <span className="mp-nav-num">05</span>
-            <span className="mp-nav-icon">💳</span>
+            <span className="mp-nav-icon"><Icon name="card" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Payments</span>
           </button>
 
@@ -606,18 +838,8 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             onClick={() => setActiveModule("customers")}
           >
             <span className="mp-nav-num">06</span>
-            <span className="mp-nav-icon">👥</span>
+            <span className="mp-nav-icon"><Icon name="users" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Customers</span>
-          </button>
-
-          <button
-            type="button"
-            className={`mp-nav-item ${activeModule === "growth" ? "active" : ""}`}
-            onClick={() => setActiveModule("growth")}
-          >
-            <span className="mp-nav-num">07</span>
-            <span className="mp-nav-icon">📈</span>
-            <span className="mp-nav-label">Growth</span>
           </button>
 
           <button
@@ -625,19 +847,9 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             className={`mp-nav-item ${activeModule === "shop" ? "active" : ""}`}
             onClick={() => setActiveModule("shop")}
           >
-            <span className="mp-nav-num">08</span>
-            <span className="mp-nav-icon">🏪</span>
+            <span className="mp-nav-num">07</span>
+            <span className="mp-nav-icon"><Icon name="store" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Shop Management</span>
-          </button>
-
-          <button
-            type="button"
-            className={`mp-nav-item ${activeModule === "ai" ? "active" : ""}`}
-            onClick={() => setActiveModule("ai")}
-          >
-            <span className="mp-nav-num">09</span>
-            <span className="mp-nav-icon">🤖</span>
-            <span className="mp-nav-label">AI Assistant</span>
           </button>
 
           <button
@@ -645,8 +857,8 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             className={`mp-nav-item ${activeModule === "settings" ? "active" : ""}`}
             onClick={() => setActiveModule("settings")}
           >
-            <span className="mp-nav-num">10</span>
-            <span className="mp-nav-icon">⚙️</span>
+            <span className="mp-nav-num">08</span>
+            <span className="mp-nav-icon"><Icon name="settings" size={19} strokeWidth={1.8} /></span>
             <span className="mp-nav-label">Settings</span>
           </button>
         </nav>
@@ -670,7 +882,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
         <header className="mp-top-header">
           <div className="mp-header-left">
             <div className="mp-search-container">
-              <span className="mp-search-icon">🔍</span>
+              <span className="mp-search-icon"><Icon name="search" size={16} strokeWidth={1.8} /></span>
               <input
                 type="text"
                 placeholder="Search anything across products, orders, customers..."
@@ -683,7 +895,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
           <div className="mp-header-right">
             <div className="mp-date-pill">
-              <span>📅 Today</span>
+              <span><Icon name="calendar" size={13} strokeWidth={1.8} /> Today</span>
             </div>
 
             {/* Notification Bell */}
@@ -693,7 +905,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
               onClick={() => setShowNotifications(!showNotifications)}
               title="Notifications"
             >
-              🔔
+              <Icon name="bell" size={20} strokeWidth={1.8} />
               <span className="mp-notif-dot" />
             </button>
 
@@ -734,13 +946,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ padding: "8px 10px", background: "#fef9c3", borderRadius: 8, fontSize: "0.82rem" }}>
-                🛍️ <strong>New Order #KB1024</strong> from Rahul Verma (₹476).
+                <Icon name="bag" size={15} strokeWidth={1.8} /> <strong>New Order #KB1024</strong> from Rahul Verma (₹476).
               </div>
               <div style={{ padding: "8px 10px", background: "#fee2e2", borderRadius: 8, fontSize: "0.82rem" }}>
-                ⚠️ <strong>Low Stock Alert:</strong> Aashirvaad Atta (5kg) has only 6 left.
+                <Icon name="alert" size={15} strokeWidth={1.8} /> <strong>Low Stock Alert:</strong> Aashirvaad Atta (5kg) has only 6 left.
               </div>
               <div style={{ padding: "8px 10px", background: "#ecfdf5", borderRadius: 8, fontSize: "0.82rem" }}>
-                💰 <strong>Settlement Completed:</strong> ₹18,450 deposited into HDFC account.
+                <Icon name="wallet" size={15} strokeWidth={1.8} /> <strong>Settlement Completed:</strong> ₹18,450 deposited into HDFC account.
               </div>
             </div>
           </div>
@@ -773,7 +985,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 setActiveModule("settings");
               }}
             >
-              ⚙️ Account Settings
+              <Icon name="settings" size={15} strokeWidth={1.8} /> Account Settings
             </button>
             {onOpenOnboarding && (
               <button
@@ -785,7 +997,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onOpenOnboarding();
                 }}
               >
-                📝 Review Onboarding
+                <Icon name="clipboard" size={15} strokeWidth={1.8} /> Review Onboarding
               </button>
             )}
             {onSwitchToCustomer && (
@@ -798,7 +1010,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onSwitchToCustomer();
                 }}
               >
-                🛒 Switch to Customer Mode
+                <Icon name="cart" size={15} strokeWidth={1.8} /> Switch to Customer Mode
               </button>
             )}
             <button
@@ -807,7 +1019,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
               style={{ width: "100%", justifyContent: "flex-start", color: "#dc2626", borderColor: "#fecaca" }}
               onClick={onLogout}
             >
-              🚪 Logout
+              <Icon name="logout" size={15} strokeWidth={1.8} /> Logout
             </button>
           </div>
         )}
@@ -823,7 +1035,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             <div>
               <div className="dash-header-row">
                 <div className="dash-greeting-box">
-                  <h1>Namaste, {session.name ? session.name.split(" ")[0] : "Rajesh"}! 👋</h1>
+                  <h1>Namaste, {session.name ? session.name.split(" ")[0] : "Rajesh"}!</h1>
                   <p>Here's what's happening with your business today.</p>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
@@ -859,7 +1071,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
                 <div className="dash-kpi-card">
                   <div className="dash-kpi-icon-box" style={{ background: "#ecfdf5", color: "#059669" }}>
-                    🛍️
+                    <Icon name="bag" size={24} strokeWidth={1.8} />
                   </div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">{orders.length}</div>
@@ -872,7 +1084,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
                 <div className="dash-kpi-card">
                   <div className="dash-kpi-icon-box" style={{ background: "#f0f9ff", color: "#0284c7" }}>
-                    👥
+                    <Icon name="users" size={24} strokeWidth={1.8} />
                   </div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">86</div>
@@ -885,7 +1097,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
                 <div className="dash-kpi-card">
                   <div className="dash-kpi-icon-box" style={{ background: "#fef3c7", color: "#b45309" }}>
-                    📦
+                    <Icon name="package" size={24} strokeWidth={1.8} />
                   </div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">{products.length}</div>
@@ -935,22 +1147,23 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 {/* AI Insights Card */}
                 <div className="dash-ai-card">
                   <div>
-                    <span className="dash-ai-badge">✦ KAROBAAR AI Insights</span>
+                    <span className="dash-ai-badge"><Icon name="sparkle" size={12} strokeWidth={2} /> KAROBAAR AI Insights</span>
                     <p className="dash-ai-text">
-                      🌾 <strong>Atta (5kg)</strong> is running low (6 left).<br /><br />
-                      📈 Sales are up by <strong>12% this week</strong>.<br /><br />
-                      💡 Consider a 10% weekend offer on daily essentials to boost repeat orders!
+                      <Icon name="wheat" size={14} strokeWidth={1.8} /> <strong>Atta (5kg)</strong> is running low (6 left).<br /><br />
+                      <Icon name="trendingUp" size={14} strokeWidth={1.8} /> Sales are up by <strong>12% this week</strong>.<br /><br />
+                      <Icon name="lightbulb" size={14} strokeWidth={1.8} /> Consider a 10% weekend offer on daily essentials to boost repeat orders!
                     </p>
                   </div>
                   <button
                     type="button"
                     className="dash-ai-action-btn"
-                    onClick={() => {
-                      setActiveModule("ai");
-                      handleSendAiMessage("What should I do to boost weekend sales?");
-                    }}
+                  onClick={() => {
+                    setAiWidgetOpen(true);
+                    setAiWidgetExpanded(true);
+                    handleSendAiMessage("What should I do to boost weekend sales?");
+                  }}
                   >
-                    <span>🤖</span> Ask AI for Action →
+                    <span><AIMascot headOnly size={17} /></span> Ask AI for Action →
                   </button>
                 </div>
               </div>
@@ -1060,7 +1273,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <span style={{ fontSize: "1.3rem" }}>{p.icon}</span>
+                            <span style={{ fontSize: "1.3rem" }}><Icon name={p.icon as IconName} size={22} strokeWidth={1.7} /></span>
                             <div>
                               <strong style={{ fontSize: "0.85rem", display: "block" }}>{p.name}</strong>
                               <small style={{ color: "#dc2626", fontWeight: 700 }}>
@@ -1105,7 +1318,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       showToast("Bulk Excel template downloaded!");
                     }}
                   >
-                    📥 Bulk Import
+                    <Icon name="upload" size={15} strokeWidth={1.8} /> Bulk Import
                   </button>
                   <button
                     type="button"
@@ -1136,7 +1349,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       <tr key={item.id}>
                         <td>
                           <div className="product-name-col">
-                            <span className="product-thumb">{item.icon}</span>
+                            <span className="product-thumb"><Icon name={item.icon as IconName} size={22} strokeWidth={1.7} /></span>
                             <div>
                               <span className="product-item-title">{item.name}</span>
                               <span className="product-item-sku">SKU: {item.id.toUpperCase()}</span>
@@ -1360,18 +1573,19 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   type="button"
                   className="mp-btn-primary"
                   onClick={() => {
-                    setActiveModule("ai");
+                    setAiWidgetOpen(true);
+                    setAiWidgetExpanded(true);
                     handleSendAiMessage("Show products with less than 10 units in stock");
                   }}
                 >
-                  🤖 AI Stock Audit
+                  <AIMascot headOnly size={17} /> AI Stock Audit
                 </button>
               </div>
 
               {/* 4 Stats Cards */}
               <div className="inventory-stats-bar">
                 <div className="inv-stat-card">
-                  <div style={{ fontSize: "1.8rem" }}>📦</div>
+                  <div style={{ fontSize: "1.8rem" }}><Icon name="package" size={26} strokeWidth={1.8} /></div>
                   <div>
                     <div className="inv-stat-num">{products.reduce((acc, p) => acc + p.quantity, 0)}</div>
                     <div className="inv-stat-label">Total Stock Units</div>
@@ -1379,7 +1593,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 <div className="inv-stat-card">
-                  <div style={{ fontSize: "1.8rem" }}>✅</div>
+                  <div style={{ fontSize: "1.8rem" }}><Icon name="checkCircle" size={26} strokeWidth={1.8} /></div>
                   <div>
                     <div className="inv-stat-num">{products.filter((p) => p.quantity > p.threshold).length}</div>
                     <div className="inv-stat-label">In-Stock Products</div>
@@ -1387,7 +1601,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 <div className="inv-stat-card" style={{ borderColor: "#fde047", background: "#fefce8" }}>
-                  <div style={{ fontSize: "1.8rem" }}>⚠️</div>
+                  <div style={{ fontSize: "1.8rem" }}><Icon name="alert" size={26} strokeWidth={1.8} /></div>
                   <div>
                     <div className="inv-stat-num" style={{ color: "#d97706" }}>
                       {products.filter((p) => p.quantity <= p.threshold && p.quantity > 0).length}
@@ -1397,7 +1611,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 <div className="inv-stat-card" style={{ borderColor: "#fecaca", background: "#fef2f2" }}>
-                  <div style={{ fontSize: "1.8rem" }}>🚫</div>
+                  <div style={{ fontSize: "1.8rem" }}><Icon name="ban" size={26} strokeWidth={1.8} /></div>
                   <div>
                     <div className="inv-stat-num" style={{ color: "#dc2626" }}>
                       {products.filter((p) => p.quantity === 0).length}
@@ -1424,7 +1638,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       <tr key={p.id}>
                         <td>
                           <div className="product-name-col">
-                            <span className="product-thumb">{p.icon}</span>
+                            <span className="product-thumb"><Icon name={p.icon as IconName} size={22} strokeWidth={1.7} /></span>
                             <div>
                               <strong className="product-item-title">{p.name}</strong>
                               <span className="product-item-sku">₹{p.price} / unit</span>
@@ -1524,7 +1738,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   className="mp-btn-primary"
                   onClick={() => showToast("Settlement initiated to HDFC Bank!")}
                 >
-                  ⚡ Instant Bank Payout
+                  <Icon name="zap" size={15} strokeWidth={1.8} /> Instant Bank Payout
                 </button>
               </div>
 
@@ -1591,7 +1805,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   }}
                   onClick={() => showToast("Paytm Soundbox status: Active & Online")}
                 >
-                  🔊 Soundbox Status
+                  <Icon name="speaker" size={16} strokeWidth={1.8} /> Soundbox Status
                 </button>
               </div>
 
@@ -1650,18 +1864,17 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   type="button"
                   className="mp-btn-primary"
                   onClick={() => {
-                    setActiveModule("growth");
                     showToast("Opening WhatsApp Offer Creator for loyal customers");
                   }}
                 >
-                  📢 Broadcast WhatsApp Offer
+                  <Icon name="megaphone" size={15} strokeWidth={1.8} /> Broadcast WhatsApp Offer
                 </button>
               </div>
 
               {/* 4 Customer Stats */}
               <div className="cust-metrics-grid">
                 <div className="dash-kpi-card">
-                  <div className="dash-kpi-icon-box">👥</div>
+                  <div className="dash-kpi-icon-box"><Icon name="users" size={24} strokeWidth={1.8} /></div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">{customers.length + 81}</div>
                     <div className="dash-kpi-label">Total Customers</div>
@@ -1669,7 +1882,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 <div className="dash-kpi-card highlight">
-                  <div className="dash-kpi-icon-box" style={{ background: "#ecfdf5", color: "#059669" }}>⭐</div>
+                  <div className="dash-kpi-icon-box" style={{ background: "#ecfdf5", color: "#059669" }}><Icon name="star" size={24} strokeWidth={1.8} /></div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">52</div>
                     <div className="dash-kpi-label">Repeat Buyers (68%)</div>
@@ -1677,7 +1890,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 <div className="dash-kpi-card">
-                  <div className="dash-kpi-icon-box" style={{ background: "#fef3c7", color: "#b45309" }}>🛍️</div>
+                  <div className="dash-kpi-icon-box" style={{ background: "#fef3c7", color: "#b45309" }}><Icon name="bag" size={24} strokeWidth={1.8} /></div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">₹1,446</div>
                     <div className="dash-kpi-label">Avg Order Value</div>
@@ -1685,7 +1898,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 <div className="dash-kpi-card">
-                  <div className="dash-kpi-icon-box" style={{ background: "#f0f9ff", color: "#0284c7" }}>❤️</div>
+                  <div className="dash-kpi-icon-box" style={{ background: "#f0f9ff", color: "#0284c7" }}><Icon name="heart" size={24} strokeWidth={1.8} /></div>
                   <div className="dash-kpi-body">
                     <div className="dash-kpi-value">4.9 / 5</div>
                     <div className="dash-kpi-label">Merchant Rating</div>
@@ -1752,135 +1965,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           )}
 
           {/* =========================================================
-             MODULE 07: GROWTH
-             ========================================================= */}
-          {activeModule === "growth" && (
-            <div>
-              <div className="dash-header-row">
-                <div>
-                  <h1 style={{ fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>Business Growth, Analytics & Offers</h1>
-                  <p style={{ color: "#64748b", margin: "4px 0 0 0", fontSize: "0.88rem" }}>
-                    Run promotions, view revenue analytics, and grow your sales
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="mp-btn-primary"
-                  onClick={() => setShowCreateOfferModal(true)}
-                >
-                  + Create Discount Offer
-                </button>
-              </div>
-
-              <div className="growth-hero-grid">
-                {/* Sales Analytics Chart */}
-                <div className="mp-card">
-                  <div className="dash-card-header">
-                    <span className="dash-card-title">Monthly Revenue Growth</span>
-                    <span className="mp-badge success">Record High: ₹42,550</span>
-                  </div>
-
-                  <div className="sales-chart-wrapper" style={{ height: 200 }}>
-                    {[
-                      { month: "Aug", val: "₹18K", pct: 35 },
-                      { month: "Sep", val: "₹24K", pct: 45 },
-                      { month: "Oct", val: "₹29K", pct: 55 },
-                      { month: "Nov", val: "₹33K", pct: 62 },
-                      { month: "Dec", val: "₹38K", pct: 78 },
-                      { month: "Jan", val: "₹42.5K", pct: 90, active: true },
-                    ].map((m) => (
-                      <div key={m.month} className="chart-bar-col">
-                        <div
-                          className={`chart-bar-fill ${m.active ? "active" : ""}`}
-                          style={{ height: `${m.pct}%` }}
-                        />
-                        <span className="chart-bar-day">{m.month}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* AI Growth Recommendations */}
-                <div className="mp-card" style={{ background: "#fffbeb", borderColor: "#fde047" }}>
-                  <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginTop: 0, marginBottom: 14 }}>
-                    🤖 AI Growth Suggestions
-                  </h3>
-
-                  <div className="growth-insight-pill">
-                    <span className="growth-pill-icon">📈</span>
-                    <span className="growth-pill-text">
-                      Sales are up by <strong>18% this month</strong>. Your repeat customer rate is above average.
-                    </span>
-                  </div>
-
-                  <div className="growth-insight-pill">
-                    <span className="growth-pill-icon">🍜</span>
-                    <span className="growth-pill-text">
-                      <strong>Maggi Noodles</strong> and <strong>Tata Salt</strong> are your highest velocity items.
-                    </span>
-                  </div>
-
-                  <div className="growth-insight-pill">
-                    <span className="growth-pill-icon">🏷️</span>
-                    <span className="growth-pill-text">
-                      Creating a weekend 10% coupon will generate ~₹4,500 extra revenue.
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="mp-btn-primary"
-                    style={{ width: "100%", marginTop: 8 }}
-                    onClick={() => setShowCreateOfferModal(true)}
-                  >
-                    Create Offer with AI →
-                  </button>
-                </div>
-              </div>
-
-              {/* Active Offers & Discounts Table */}
-              <div className="mp-card" style={{ padding: 0, overflow: "hidden" }}>
-                <div style={{ padding: "16px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <strong style={{ fontSize: "1.05rem" }}>Active Promotional Offers</strong>
-                </div>
-                <table className="mp-data-table">
-                  <thead>
-                    <tr>
-                      <th>Offer Name</th>
-                      <th>Coupon Code</th>
-                      <th>Discount</th>
-                      <th>Min Order Value</th>
-                      <th>Valid Till</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {offers.map((off) => (
-                      <tr key={off.id}>
-                        <td style={{ fontWeight: 700 }}>{off.name}</td>
-                        <td>
-                          <span className="mp-badge yellow" style={{ letterSpacing: "0.08em" }}>
-                            {off.code}
-                          </span>
-                        </td>
-                        <td style={{ fontWeight: 800, color: "#10b981" }}>
-                          {off.discountType === "percentage" ? `${off.discountValue}% OFF` : `₹${off.discountValue} FLAT`}
-                        </td>
-                        <td>Orders above ₹{off.minOrder}</td>
-                        <td style={{ color: "#64748b" }}>{off.validTill}</td>
-                        <td>
-                          <span className="mp-badge success">{off.status}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* =========================================================
-             MODULE 08: SHOP MANAGEMENT
+             MODULE 07: SHOP MANAGEMENT
              ========================================================= */}
           {activeModule === "shop" && (
             <div>
@@ -1897,7 +1982,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                     className="mp-btn-primary"
                     onClick={onSwitchToCustomer}
                   >
-                    👁️ Preview Customer View
+                    <Icon name="eye" size={15} strokeWidth={1.8} /> Preview Customer View
                   </button>
                 )}
               </div>
@@ -1905,11 +1990,11 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
               {/* Storefront Visual Banner Card */}
               <div className="shop-banner-card">
                 <div className="shop-cover-photo">
-                  🏪
+                  <Icon name="store" size={56} strokeWidth={1.2} />
                 </div>
                 <div className="shop-profile-body">
                   <div className="shop-meta-left">
-                    <div className="shop-avatar-large">🛒</div>
+                    <div className="shop-avatar-large"><Icon name="cart" size={26} strokeWidth={1.8} /></div>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <h2 style={{ fontSize: "1.4rem", fontWeight: 800, margin: 0 }}>{shopName}</h2>
@@ -1930,14 +2015,14 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                         showToast("Public store link copied to clipboard!");
                       }}
                     >
-                      🔗 Copy Link
+                      <Icon name="link" size={15} strokeWidth={1.8} /> Copy Link
                     </button>
                     <button
                       type="button"
                       className="mp-btn-primary"
                       onClick={() => showToast("Store QR Code generated & downloaded!")}
                     >
-                      📱 Download QR
+                      <Icon name="qr" size={15} strokeWidth={1.8} /> Download QR
                     </button>
                   </div>
                 </div>
@@ -1950,13 +2035,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Opening Store Profile Editor")}
                 >
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <div className="tile-icon-box">🏬</div>
+                    <div className="tile-icon-box"><Icon name="store" size={22} strokeWidth={1.8} /></div>
                     <div>
                       <strong style={{ display: "block", fontSize: "0.95rem" }}>Shop Profile</strong>
                       <small style={{ color: "#64748b" }}>Store name, description, address, category</small>
                     </div>
                   </div>
-                  <span>→</span>
+                  <span><Icon name="arrowRight" size={15} strokeWidth={1.8} /></span>
                 </div>
 
                 <div
@@ -1964,13 +2049,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Opening Storefront Customizer")}
                 >
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <div className="tile-icon-box">🎨</div>
+                    <div className="tile-icon-box"><Icon name="palette" size={22} strokeWidth={1.8} /></div>
                     <div>
                       <strong style={{ display: "block", fontSize: "0.95rem" }}>Storefront Customization</strong>
                       <small style={{ color: "#64748b" }}>Upload store logo, hero banner, featured shelves</small>
                     </div>
                   </div>
-                  <span>→</span>
+                  <span><Icon name="arrowRight" size={15} strokeWidth={1.8} /></span>
                 </div>
 
                 <div
@@ -1978,13 +2063,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Operating Hours: Mon - Sun (8:00 AM - 10:00 PM)")}
                 >
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <div className="tile-icon-box">⏰</div>
+                    <div className="tile-icon-box"><Icon name="clock" size={22} /></div>
                     <div>
                       <strong style={{ display: "block", fontSize: "0.95rem" }}>Business Operating Hours</strong>
                       <small style={{ color: "#64748b" }}>Open daily: 8:00 AM – 10:00 PM</small>
                     </div>
                   </div>
-                  <span>→</span>
+                  <span><Icon name="arrowRight" size={15} strokeWidth={1.8} /></span>
                 </div>
 
                 <div
@@ -1992,152 +2077,20 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast(`Delivery: ₹${deliveryFee} | Free above ₹${freeDeliveryAbove}`)}
                 >
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <div className="tile-icon-box">🚚</div>
+                    <div className="tile-icon-box"><Icon name="truck" size={22} strokeWidth={1.8} /></div>
                     <div>
                       <strong style={{ display: "block", fontSize: "0.95rem" }}>Delivery & Pickup Policies</strong>
                       <small style={{ color: "#64748b" }}>Doorstep delivery & Counter pickup enabled</small>
                     </div>
                   </div>
-                  <span>→</span>
+                  <span><Icon name="arrowRight" size={15} strokeWidth={1.8} /></span>
                 </div>
               </div>
             </div>
           )}
 
           {/* =========================================================
-             MODULE 09: AI ASSISTANT (Matching Reference Screen 09)
-             ========================================================= */}
-          {activeModule === "ai" && (
-            <div className="ai-portal-view">
-              <div className="ai-robot-avatar">
-                🤖
-              </div>
-
-              <h1 className="ai-assistant-heading">KAROBAAR AI</h1>
-              <p className="ai-assistant-sub">Your Smart Local Business Copilot</p>
-
-              {/* Voice Wave */}
-              <div className="ai-wave-container">
-                <span className="wave-line" />
-                <span className="wave-line" />
-                <span className="wave-line" />
-                <span className="wave-line" />
-                <span className="wave-line" />
-              </div>
-
-              {/* Central Glowing Mic Button */}
-              <button
-                type="button"
-                className={`ai-mic-cta-btn ${isAiListening ? "listening" : ""}`}
-                onClick={handleToggleVoiceMic}
-                title="Tap to speak in Hindi or English"
-              >
-                🎙️
-              </button>
-
-              <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 16px 0" }}>
-                How can I help your business today?
-              </h2>
-
-              {/* Suggested Voice Prompts */}
-              <div className="ai-prompts-container">
-                {[
-                  "Show today's sales and earnings overview",
-                  "Which products are running low on stock?",
-                  "Create a 10% discount offer for repeat customers",
-                  "Show pending orders waiting for approval",
-                  "Add new product: Fortune Basmati Rice 5kg at ₹480",
-                ].map((prompt, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className="ai-prompt-pill"
-                    onClick={() => handleSendAiMessage(prompt)}
-                  >
-                    <span>✦</span> {prompt}
-                  </button>
-                ))}
-              </div>
-
-              {/* Conversation Log Preview */}
-              {aiChatHistory.length > 1 && (
-                <div
-                  className="mp-card"
-                  style={{
-                    maxWidth: 540,
-                    width: "100%",
-                    marginTop: 24,
-                    textAlign: "left",
-                    maxHeight: 280,
-                    overflowY: "auto",
-                  }}
-                >
-                  <strong style={{ fontSize: "0.9rem", display: "block", marginBottom: 12 }}>
-                    Conversation Transcript
-                  </strong>
-                  {aiChatHistory.map((msg, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: 8,
-                        marginBottom: 8,
-                        fontSize: "0.84rem",
-                        backgroundColor: msg.sender === "user" ? "#f1f5f9" : "#fef9c3",
-                        border: msg.sender === "ai" ? "1px solid #fde047" : "none",
-                      }}
-                    >
-                      <strong>{msg.sender === "user" ? "You" : "🤖 KAROBAAR AI"}:</strong> {msg.text}
-                    </div>
-                  ))}
-
-                  {/* Pending Action Confirmation Box */}
-                  {pendingAiAction && (
-                    <div
-                      style={{
-                        backgroundColor: "#ecfdf5",
-                        border: "1.5px solid #10b981",
-                        borderRadius: 10,
-                        padding: 12,
-                        marginTop: 10,
-                      }}
-                    >
-                      <strong style={{ color: "#065f46", fontSize: "0.85rem", display: "block" }}>
-                        ⚡ Suggested Action: {pendingAiAction.title}
-                      </strong>
-                      <small style={{ color: "#047857", display: "block", marginBottom: 10 }}>
-                        {pendingAiAction.desc}
-                      </small>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          type="button"
-                          className="mp-btn-primary"
-                          style={{ padding: "6px 12px", fontSize: "0.78rem" }}
-                          onClick={() => {
-                            pendingAiAction.apply();
-                            setPendingAiAction(null);
-                          }}
-                        >
-                          Confirm & Apply ✓
-                        </button>
-                        <button
-                          type="button"
-                          className="mp-btn-secondary"
-                          style={{ padding: "6px 12px", fontSize: "0.78rem" }}
-                          onClick={() => setPendingAiAction(null)}
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* =========================================================
-             MODULE 10: SETTINGS (Matching Screen 10 in image)
+             MODULE 08: SETTINGS (Matching Screen 10 in image)
              ========================================================= */}
           {activeModule === "settings" && (
             <div>
@@ -2157,7 +2110,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Account: Rajesh Kumar • +91 9876543210")}
                 >
                   <div className="setting-card-header">
-                    <div className="setting-icon-box">👤</div>
+                    <div className="setting-icon-box"><Icon name="user" size={21} strokeWidth={1.8} /></div>
                     <span className="setting-card-title">Account Settings</span>
                   </div>
                   <p className="setting-card-desc">Profile, mobile number, email, password</p>
@@ -2166,10 +2119,10 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 {/* 2. Business Account */}
                 <div
                   className="setting-card"
-                  onClick={() => showToast("Business Account: GSTIN & Verification Verified ✅")}
+                  onClick={() => showToast("Business Account: GSTIN & Verification Verified")}
                 >
                   <div className="setting-card-header">
-                    <div className="setting-icon-box">📋</div>
+                    <div className="setting-icon-box"><Icon name="clipboard" size={21} strokeWidth={1.8} /></div>
                     <span className="setting-card-title">Business Account</span>
                   </div>
                   <p className="setting-card-desc">Business details, GSTIN, verified credentials</p>
@@ -2181,7 +2134,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Push, SMS & WhatsApp notifications enabled")}
                 >
                   <div className="setting-card-header">
-                    <div className="setting-icon-box">🔔</div>
+                    <div className="setting-icon-box"><Icon name="bell" size={21} strokeWidth={1.8} /></div>
                     <span className="setting-card-title">Notifications</span>
                   </div>
                   <p className="setting-card-desc">Order, payment alerts, and soundbox settings</p>
@@ -2193,7 +2146,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Language: English, Hindi (हिंदी), Marathi (मराठी) supported")}
                 >
                   <div className="setting-card-header">
-                    <div className="setting-icon-box">🌐</div>
+                    <div className="setting-icon-box"><Icon name="globe" size={21} strokeWidth={1.8} /></div>
                     <span className="setting-card-title">Language & Accessibility</span>
                   </div>
                   <p className="setting-card-desc">English, Hindi, Marathi, text & voice accents</p>
@@ -2205,7 +2158,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Active Sessions: 1 device • Encrypted 256-bit")}
                 >
                   <div className="setting-card-header">
-                    <div className="setting-icon-box">🔒</div>
+                    <div className="setting-icon-box"><Icon name="lock" size={21} strokeWidth={1.8} /></div>
                     <span className="setting-card-title">Security & Privacy</span>
                   </div>
                   <p className="setting-card-desc">Login, devices, 2FA, data privacy</p>
@@ -2217,7 +2170,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   onClick={() => showToast("Calling Helpline: 1800-KAROBAAR (toll-free)")}
                 >
                   <div className="setting-card-header">
-                    <div className="setting-icon-box">💬</div>
+                    <div className="setting-icon-box"><Icon name="message" size={21} strokeWidth={1.8} /></div>
                     <span className="setting-card-title">Help & Support</span>
                   </div>
                   <p className="setting-card-desc">FAQs, contact helpline, raise tickets</p>
@@ -2236,7 +2189,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       className="mp-btn-primary"
                       onClick={onSwitchToCustomer}
                     >
-                      🛒 Switch to Customer Mode
+                      <Icon name="cart" size={15} strokeWidth={1.8} /> Switch to Customer Mode
                     </button>
                   )}
                   {onOpenOnboarding && (
@@ -2245,7 +2198,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       className="mp-btn-secondary"
                       onClick={onOpenOnboarding}
                     >
-                      📝 Re-run Merchant Onboarding
+                      <Icon name="clipboard" size={15} strokeWidth={1.8} /> Re-run Merchant Onboarding
                     </button>
                   )}
                   <button
@@ -2253,7 +2206,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                     className="mp-btn-secondary"
                     onClick={onReplayIntro}
                   >
-                    🎬 Replay Intro Film
+                    <Icon name="zap" size={15} strokeWidth={1.8} /> Replay Intro Film
                   </button>
                   <button
                     type="button"
@@ -2261,7 +2214,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                     style={{ color: "#dc2626", borderColor: "#fecaca" }}
                     onClick={onLogout}
                   >
-                    🚪 Logout
+                    <Icon name="logout" size={15} strokeWidth={1.8} /> Logout
                   </button>
                 </div>
               </div>
@@ -2271,21 +2224,37 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-         PERSISTENT FLOATING AI MIC ACTION BUTTON
+         PERSISTENT FLOATING AI ASSISTANT (available on every screen)
+         Collapsed: robot FAB → Open: popup chat → Expanded: side panel
          ───────────────────────────────────────────────────────────── */}
-      <button
-        type="button"
-        className="mp-persistent-floating-ai"
-        onClick={() => {
-          if (activeModule !== "ai") {
-            setActiveModule("ai");
-          }
-          handleToggleVoiceMic();
+      <AiAssistantWidget
+        open={aiWidgetOpen}
+        expanded={aiWidgetExpanded}
+        chatHistory={aiChatHistory}
+        inputText={aiInputText}
+        isListening={isAiListening}
+        speechState={aiSpeechState}
+        isSpeaking={isAiSpeaking}
+        voiceMuted={aiVoiceMuted}
+        pendingAction={pendingAiAction}
+        onOpenChange={(next) => {
+          setAiWidgetOpen(next);
+          if (!next) stopAiSpeaking();
         }}
-        title="Tap to speak with KAROBAAR AI"
-      >
-        🎙️
-      </button>
+        onExpandedChange={setAiWidgetExpanded}
+        onInputChange={setAiInputText}
+        onSend={handleSendAiMessage}
+        onToggleMic={handleToggleVoiceMic}
+        onToggleMute={handleToggleAiMute}
+        onStopSpeaking={stopAiSpeaking}
+        onConfirmAction={() => {
+          if (pendingAiAction) {
+            pendingAiAction.apply();
+            setPendingAiAction(null);
+          }
+        }}
+        onDismissAction={() => setPendingAiAction(null)}
+      />
 
       {/* ─────────────────────────────────────────────────────────────
          MOBILE BOTTOM NAVIGATION (Matching Reference Blueprint)
@@ -2296,7 +2265,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           className={`mp-mobile-nav-btn ${activeModule === "dashboard" ? "active" : ""}`}
           onClick={() => setActiveModule("dashboard")}
         >
-          <span className="mobile-icon">📊</span>
+          <span className="mobile-icon"><Icon name="chart" size={18} strokeWidth={1.8} /></span>
           <span>Home</span>
         </button>
         <button
@@ -2304,26 +2273,26 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           className={`mp-mobile-nav-btn ${activeModule === "products" ? "active" : ""}`}
           onClick={() => setActiveModule("products")}
         >
-          <span className="mobile-icon">📦</span>
+          <span className="mobile-icon"><Icon name="package" size={18} strokeWidth={1.8} /></span>
           <span>Products</span>
         </button>
         <button
           type="button"
           className="mp-mobile-nav-center-ai"
           onClick={() => {
-            setActiveModule("ai");
+            setAiWidgetOpen(true);
             handleToggleVoiceMic();
           }}
           title="KAROBAAR AI"
         >
-          🎙️
+          <Icon name="mic" size={20} strokeWidth={1.8} />
         </button>
         <button
           type="button"
           className={`mp-mobile-nav-btn ${activeModule === "orders" ? "active" : ""}`}
           onClick={() => setActiveModule("orders")}
         >
-          <span className="mobile-icon">🛍️</span>
+          <span className="mobile-icon"><Icon name="bag" size={18} strokeWidth={1.8} /></span>
           <span>Orders</span>
         </button>
         <button
@@ -2331,7 +2300,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           className={`mp-mobile-nav-btn ${activeModule === "settings" ? "active" : ""}`}
           onClick={() => setActiveModule("settings")}
         >
-          <span className="mobile-icon">⚙️</span>
+          <span className="mobile-icon"><Icon name="settings" size={18} strokeWidth={1.8} /></span>
           <span>Settings</span>
         </button>
       </nav>
@@ -2354,7 +2323,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 className="mp-modal-close-btn"
                 onClick={() => setSelectedOrder(null)}
               >
-                ✕
+                <Icon name="x" size={18} strokeWidth={1.8} />
               </button>
             </div>
 
@@ -2410,7 +2379,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       borderRadius: 8,
                     }}
                   >
-                    <span>{item.icon} {item.name} × {item.qty}</span>
+                    <span><Icon name={item.icon as IconName} size={14} strokeWidth={1.7} /> {item.name} × {item.qty}</span>
                     <strong>₹{item.price * item.qty}</strong>
                   </div>
                 ))}
@@ -2430,7 +2399,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   setShowInvoiceModal(selectedOrder);
                 }}
               >
-                🧾 Print Invoice
+                <Icon name="receipt" size={15} /> Print Invoice
               </button>
               {selectedOrder.status === "new" && (
                 <button
@@ -2485,7 +2454,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 className="mp-modal-close-btn"
                 onClick={() => setShowAddProductModal(false)}
               >
-                ✕
+                <Icon name="x" size={18} strokeWidth={1.8} />
               </button>
             </div>
 
@@ -2498,7 +2467,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   style={{ flex: 1 }}
                   onClick={() => setAddProductMode("manual")}
                 >
-                  ✍️ Manual Form
+                  <Icon name="pen" size={15} /> Manual Form
                 </button>
                 <button
                   type="button"
@@ -2506,10 +2475,10 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   style={{ flex: 1 }}
                   onClick={() => {
                     setAddProductMode("camera");
-                    showToast("📷 Barcode camera scanner activated!");
+                    showToast("Barcode camera scanner activated!");
                   }}
                 >
-                  📷 Camera Scan
+                  <Icon name="camera" size={15} /> Camera Scan
                 </button>
                 <button
                   type="button"
@@ -2517,10 +2486,10 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   style={{ flex: 1 }}
                   onClick={() => {
                     setAddProductMode("voice");
-                    showToast("🎙️ Voice AI: Boliye product ka naam aur price!");
+                    showToast("Voice AI: Boliye product ka naam aur price!");
                   }}
                 >
-                  🎙️ Voice AI
+                  <Icon name="mic" size={15} /> Voice AI
                 </button>
               </div>
 
@@ -2630,7 +2599,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 className="mp-modal-close-btn"
                 onClick={() => setShowUpdateStockModal(null)}
               >
-                ✕
+                <Icon name="x" size={18} strokeWidth={1.8} />
               </button>
             </div>
 
@@ -2709,97 +2678,6 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
         </div>
       )}
 
-      {/* 4. CREATE DISCOUNT OFFER MODAL */}
-      {showCreateOfferModal && (
-        <div className="mp-modal-backdrop" onClick={() => setShowCreateOfferModal(false)}>
-          <div className="mp-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="mp-modal-header">
-              <h3 className="mp-modal-title">Create Store Promotional Offer</h3>
-              <button
-                type="button"
-                className="mp-modal-close-btn"
-                onClick={() => setShowCreateOfferModal(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateOfferSubmit}>
-              <div className="mp-modal-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 4 }}>
-                    Offer Title
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Weekend Grocery Fest"
-                    value={newOfferName}
-                    onChange={(e) => setNewOfferName(e.target.value)}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #cbd5e1" }}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <label style={{ fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 4 }}>
-                      Promo Code
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. FEST10"
-                      value={newOfferCode}
-                      onChange={(e) => setNewOfferCode(e.target.value)}
-                      style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #cbd5e1" }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 4 }}>
-                      Discount Percentage (%)
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={90}
-                      value={newOfferDisc}
-                      onChange={(e) => setNewOfferDisc(Number(e.target.value))}
-                      style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #cbd5e1" }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 4 }}>
-                    Minimum Order Value (₹)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={newOfferMinOrder}
-                    onChange={(e) => setNewOfferMinOrder(Number(e.target.value))}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #cbd5e1" }}
-                  />
-                </div>
-              </div>
-
-              <div className="mp-modal-footer">
-                <button
-                  type="button"
-                  className="mp-btn-secondary"
-                  onClick={() => setShowCreateOfferModal(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="mp-btn-primary">
-                  Launch Offer →
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* 5. INVOICE PREVIEW MODAL */}
       {showInvoiceModal && (
         <div className="mp-modal-backdrop" onClick={() => setShowInvoiceModal(null)}>
@@ -2811,7 +2689,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 className="mp-modal-close-btn"
                 onClick={() => setShowInvoiceModal(null)}
               >
-                ✕
+                <Icon name="x" size={18} strokeWidth={1.8} />
               </button>
             </div>
 
@@ -2875,7 +2753,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   showToast("Invoice ready for printing!");
                 }}
               >
-                🖨️ Print / Download PDF
+                <Icon name="printer" size={15} /> Print / Download PDF
               </button>
             </div>
           </div>

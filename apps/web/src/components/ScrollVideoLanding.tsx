@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Icon, type IconName } from "./icons";
 
 interface ScrollVideoLandingProps {
   onProceedToLogin: (role?: "merchant" | "customer") => void;
@@ -376,9 +377,9 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
                 Stock sambhalo, orders dekho, customers se baat karo... Business chalana itna mushkil kyun?
               </p>
               <div className="problem-pills-row">
-                <span className="problem-pill">📦 Bikhra hua inventory & stock</span>
-                <span className="problem-pill">📝 Daily hisaab-kitaab ki tension</span>
-                <span className="problem-pill">⏳ Counter par lambi bheed</span>
+                <span className="problem-pill"><Icon name="package" size={13} strokeWidth={1.8} /> Bikhra hua inventory & stock</span>
+                <span className="problem-pill"><Icon name="clipboard" size={13} strokeWidth={1.8} /> Daily hisaab-kitaab ki tension</span>
+                <span className="problem-pill"><Icon name="clock" size={13} /> Counter par lambi bheed</span>
               </div>
             </div>
 
@@ -394,7 +395,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
                 Milkar banate hain business ko smart. Dukaan ho ya shopping, Karobaar hai sabke saath.
               </p>
               <div className="sv-story-highlight">
-                <span className="sparkle-dot">✦</span>
+                <span className="sparkle-dot"><Icon name="sparkle" size={12} strokeWidth={2} /></span>
                 <span>Digital Dukaan · Instant Orders · Smart Stock</span>
               </div>
             </div>
@@ -424,19 +425,19 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
 
                 <div className="sv-voice-chips">
                   <div className="sv-voice-bubble">
-                    <span className="quote-icon">🎙️</span> "Aaj ki bikri kitni hui?"
+                    <span className="quote-icon"><Icon name="mic" size={15} strokeWidth={1.8} /></span> "Aaj ki bikri kitni hui?"
                   </div>
                   <div className="sv-voice-bubble">
-                    <span className="quote-icon">🎙️</span> "Meri dukaan par naye products add karo."
+                    <span className="quote-icon"><Icon name="mic" size={15} strokeWidth={1.8} /></span> "Meri dukaan par naye products add karo."
                   </div>
                   <div className="sv-voice-bubble">
-                    <span className="quote-icon">🎙️</span> "Mere aas paas grocery store dikhao."
+                    <span className="quote-icon"><Icon name="mic" size={15} strokeWidth={1.8} /></span> "Mere aas paas grocery store dikhao."
                   </div>
                 </div>
               </div>
 
               <div className="sv-story-highlight">
-                <span className="sparkle-dot">✦</span>
+                <span className="sparkle-dot"><Icon name="sparkle" size={12} strokeWidth={2} /></span>
                 <span>Just say it! Native Indian voice intelligence</span>
               </div>
             </div>
@@ -461,7 +462,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
                   role="button"
                   tabIndex={0}
                 >
-                  <div className="world-icon">🏪</div>
+                  <div className="world-icon"><Icon name="store" size={32} strokeWidth={1.5} /></div>
                   <h3 className="world-title">Dukaan Apni.</h3>
                   <p className="world-desc">
                     Apna store manage karo. Customers badhao. Business grow karo.
@@ -485,7 +486,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
                   role="button"
                   tabIndex={0}
                 >
-                  <div className="world-icon">🛍️</div>
+                  <div className="world-icon"><Icon name="bag" size={32} strokeWidth={1.5} /></div>
                   <h3 className="world-title">Shopping Apni.</h3>
                   <p className="world-desc">
                     Local shops discover karo. Pasand ki cheezein order karo.
@@ -516,7 +517,7 @@ export const ScrollVideoLanding: React.FC<ScrollVideoLandingProps> = ({
                 Chhoti dukaan ho ya bada sapna, har business ko aage badhne ka mauka mile.
               </p>
               <div className="sv-story-highlight">
-                <span className="sparkle-dot">✦</span>
+                <span className="sparkle-dot"><Icon name="sparkle" size={12} strokeWidth={2} /></span>
                 <span>Apne sheher se. Apne logon ke liye.</span>
               </div>
             </div>

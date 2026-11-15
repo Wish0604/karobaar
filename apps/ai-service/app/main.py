@@ -1,8 +1,27 @@
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from typing import Literal, Dict, Any
+import os
+from typing import Any, Dict, Literal, Optional
 
-app = FastAPI(title="LocalAI Intelligence Service", version="0.1.0")
+import httpx
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from pydantic import BaseModel, Field
+
+load_dotenv()
+
+app = FastAPI(title="LocalAI Intelligence Service", version="0.2.0")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sarvam AI voice configuration (STT: saaras, TTS: bulbul)
+# Paste your key into apps/ai-service/.env as SARVAM_API_KEY=... — it never
+# leaves this service; browsers talk to it through the Express backend proxy.
+# ─────────────────────────────────────────────────────────────────────────────
+SARVAM_API_BASE = "https://api.sarvam.ai"
+SARVAM_API_KEY = (os.getenv("SARVAM_API_KEY") or "").strip()
+SARVAM_STT_MODEL = os.getenv("SARVAM_STT_MODEL", "saaras:v4")
+SARVAM_TTS_MODEL = os.getenv("SARVAM_TTS_MODEL", "bulbul:v3")
+SARVAM_TTS_SPEAKER = os.getenv("SARVAM_TTS_SPEAKER", "shubh")
+
+sarvam_configured = bool(SARVAM_API_KEY)
 
 
 class AssistantMessage(BaseModel):
@@ -16,9 +35,120 @@ class ToolCall(BaseModel):
     arguments: Dict[str, Any]
 
 
+class TtsRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2500)
+    languageCode: str = "en-IN"
+    speaker: Optional[str] = None
+
+
+def _sarvam_headers() -> Dict[str, str]:
+    return {"api-subscription-key": SARVAM_API_KEY}
+
+
 @app.get("/health")
 def health() -> Dict[str, Any]:
     return {"success": True, "data": {"service": "localai-ai-service", "status": "ok"}}
+
+
+@app.get("/v1/voice/config")
+def voice_config() -> Dict[str, Any]:
+    """Lets the web widget know whether Sarvam voice is available or it
+    should fall back to the browser's built-in speech engine."""
+    return {
+        "success": True,
+        "data": {
+            "sarvamConfigured": sarvam_configured,
+            "sttModel": SARVAM_STT_MODEL if sarvam_configured else None,
+            "ttsModel": SARVAM_TTS_MODEL if sarvam_configured else None,
+            "ttsSpeaker": SARVAM_TTS_SPEAKER if sarvam_configured else None,
+        },
+    }
+
+
+@app.post("/v1/voice/stt")
+async def voice_stt(file: UploadFile = File(...)) -> Dict[str, Any]:
+    """Speech-to-Text via Sarvam Saaras. Auto-detects Hindi/English/Indic
+    languages. Audio from MediaRecorder (webm/opus) is supported directly."""
+    if not sarvam_configured:
+        raise HTTPException(
+            status_code=503,
+            detail={"success": False, "error": {"code": "sarvam_not_configured", "message": "Set SARVAM_API_KEY in apps/ai-service/.env"}},
+        )
+
+    audio_bytes = await file.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail={"success": False, "error": {"code": "empty_audio", "message": "No audio received"}})
+
+    files = {"file": (file.filename or "voice.webm", audio_bytes, file.content_type or "audio/webm")}
+    data = {"model": SARVAM_STT_MODEL, "language_code": "unknown"}
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(
+                f"{SARVAM_API_BASE}/speech-to-text",
+                headers=_sarvam_headers(),
+                files=files,
+                data=data,
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail={"success": False, "error": {"code": "sarvam_unreachable", "message": str(exc)}})
+
+    if resp.status_code != 200:
+        detail = {"success": False, "error": {"code": "sarvam_error", "message": resp.text[:300], "upstreamStatus": resp.status_code}}
+        raise HTTPException(status_code=502, detail=detail)
+
+    body = resp.json()
+    return {
+        "success": True,
+        "data": {
+            "transcript": body.get("transcript", ""),
+            "languageCode": body.get("language_code"),
+            "provider": "sarvam",
+        },
+    }
+
+
+@app.post("/v1/voice/tts")
+async def voice_tts(payload: TtsRequest) -> Dict[str, Any]:
+    """Text-to-Speech via Sarvam Bulbul. Returns base64 WAV the browser plays
+    so the assistant actually talks to the merchant."""
+    if not sarvam_configured:
+        raise HTTPException(
+            status_code=503,
+            detail={"success": False, "error": {"code": "sarvam_not_configured", "message": "Set SARVAM_API_KEY in apps/ai-service/.env"}},
+        )
+
+    body = {
+        "text": payload.text,
+        "language_code": payload.languageCode,
+        "speaker": payload.speaker or SARVAM_TTS_SPEAKER,
+        "model": SARVAM_TTS_MODEL,
+        "speech_sample_rate": 22050,
+        "output_audio_codec": "wav",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(f"{SARVAM_API_BASE}/text-to-speech", headers={**_sarvam_headers(), "Content-Type": "application/json"}, json=body)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail={"success": False, "error": {"code": "sarvam_unreachable", "message": str(exc)}})
+
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail={"success": False, "error": {"code": "sarvam_error", "message": resp.text[:300], "upstreamStatus": resp.status_code}})
+
+    audios = resp.json().get("audios") or []
+    if not audios:
+        raise HTTPException(status_code=502, detail={"success": False, "error": {"code": "sarvam_empty_audio", "message": "No audio returned"}})
+
+    return {
+        "success": True,
+        "data": {
+            "audioBase64": audios[0],
+            "audioFormat": "wav",
+            "speaker": body["speaker"],
+            "provider": "sarvam",
+        },
+    }
 
 
 @app.post("/v1/assistant/message")

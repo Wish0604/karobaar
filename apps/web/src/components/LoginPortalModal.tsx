@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Icon, type IconName } from "./icons";
 import * as THREE from "three";
 import CLOUDS2 from "vanta/dist/vanta.clouds2.min";
 import type { UserSession } from "../types";
@@ -9,7 +10,9 @@ interface LoginPortalModalProps {
   initialRole?: "merchant" | "customer";
 }
 
-const API_BASE_URL = "http://localhost:4000";
+// Relative when served behind the sandbox preview gateway (set VITE_API_ORIGIN=""),
+// or the backend origin in local dev (default http://localhost:4000).
+const API_BASE_URL = import.meta.env.VITE_API_ORIGIN ?? "http://localhost:4000";
 
 export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
   onLoginSuccess,
@@ -382,14 +385,14 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                 }}
               >
                 <div className="role-tab-inner">
-                  <span className="role-icon-box">🏪</span>
+                  <span className="role-icon-box"><Icon name="store" size={24} strokeWidth={1.6} /></span>
                   <div className="role-info">
                     <span className="role-title">Merchant</span>
                     <span className="role-desc">(व्यापारी)</span>
                   </div>
                 </div>
                 {activeRole === "merchant" && (
-                  <span className="role-check-mark">✓</span>
+                  <span className="role-check-mark"><Icon name="check" size={12} strokeWidth={2.6} /></span>
                 )}
               </button>
 
@@ -402,14 +405,14 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                 }}
               >
                 <div className="role-tab-inner">
-                  <span className="role-icon-box">🛒</span>
+                  <span className="role-icon-box"><Icon name="cart" size={24} strokeWidth={1.6} /></span>
                   <div className="role-info">
                     <span className="role-title">Customer</span>
                     <span className="role-desc">(ग्राहक)</span>
                   </div>
                 </div>
                 {activeRole === "customer" && (
-                  <span className="role-check-mark">✓</span>
+                  <span className="role-check-mark"><Icon name="check" size={12} strokeWidth={2.6} /></span>
                 )}
               </button>
             </div>
@@ -575,7 +578,7 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
 
             {formError && (
               <div className="login-form-error">
-                <span>⚠️ {formError}</span>
+                <span><Icon name="alert" size={13} strokeWidth={1.8} /> {formError}</span>
               </div>
             )}
 
@@ -592,7 +595,7 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                 ? (resolveUserForLogin(loginPhone).role === "customer" ? handleInstantCustomerDemo : handleInstantMerchantDemo)
                 : (activeRole === "merchant" ? handleInstantMerchantDemo : handleInstantCustomerDemo)}
             >
-              <span className="voice-mic-icon">🎙️</span>
+              <span className="voice-mic-icon"><Icon name="mic" size={20} strokeWidth={1.8} /></span>
               <div className="voice-login-text">
                 <strong>Continue with Voice</strong>
                 <small>(आवाज़ से {activeTab === "create" ? "रजिस्टर" : "लॉगिन"} करें)</small>
@@ -610,7 +613,7 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                     onClick={handleInstantMerchantDemo}
                     title="Directly enter Merchant Portal"
                   >
-                    🏪 Demo Merchant
+                    <Icon name="store" size={14} strokeWidth={1.8} /> Demo Merchant
                   </button>
                   <button
                     type="button"
@@ -618,7 +621,7 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
                     onClick={handleInstantCustomerDemo}
                     title="Directly enter Customer Portal"
                   >
-                    🛒 Demo Customer
+                    <Icon name="cart" size={14} strokeWidth={1.8} /> Demo Customer
                   </button>
                 </div>
               </div>
@@ -626,7 +629,7 @@ export const LoginPortalModal: React.FC<LoginPortalModalProps> = ({
 
             {/* Trust Badges */}
             <div className="login-trust-badges">
-              <span>✅ Secure</span>
+              <span><Icon name="shieldCheck" size={13} strokeWidth={1.8} /> Secure</span>
               <span className="trust-dot">•</span>
               <span>Simple</span>
               <span className="trust-dot">•</span>

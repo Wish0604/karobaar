@@ -2734,3 +2734,8 @@ input::placeholder {
   .sv-btn-join-karobaar { padding: 14px 28px; font-size: 1.05rem; }
   .landing-footer-sticky { font-size: 0.72rem; bottom: 10px; }
 }
+
+/* Inline SVG icon alignment (emoji replacements sit inline with text) */
+svg {
+  vertical-align: -0.18em;
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Icon, type IconName } from "./icons";
 
 interface IntroVideoScreenProps {
   onProceedToLogin: () => void;
@@ -82,7 +83,7 @@ export const IntroVideoScreen: React.FC<IntroVideoScreenProps> = ({
                 className="action-btn text-btn"
                 onClick={onCloseReplay}
               >
-                ✕ Close Replay
+                <Icon name="x" size={14} strokeWidth={1.8} /> Close Replay
               </button>
             ) : (
               <button

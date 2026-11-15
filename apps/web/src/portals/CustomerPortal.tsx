@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Icon, type IconName } from "../components/icons";
 import type { UserSession, ProductItem } from "../types";
 
 interface CustomerPortalProps {
@@ -164,19 +165,19 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     const lower = q.toLowerCase();
     if (lower.includes("rice")) {
       setAiAnswer(
-        "🍚 Best Match: Rajesh Kirana (350m away) has 'Basmati Rice 5kg Premium' at ₹480 (₹30 cheaper than Gupta Supermarket). 24 units in stock for instant pickup or 20-min delivery."
+        "Best Match: Rajesh Kirana (350m away) has 'Basmati Rice 5kg Premium' at ₹480 (₹30 cheaper than Gupta Supermarket). 24 units in stock for instant pickup or 20-min delivery."
       );
     } else if (lower.includes("oil")) {
       setAiAnswer(
-        "🌻 Edible Oil Comparison: Rajesh Kirana offers 'Fortune Sunlite 1L' for ₹145 (350m away). Balaji Traders has 'Gemini Oil 1L' for ₹142 (1.1km away)."
+        "Edible Oil Comparison: Rajesh Kirana offers 'Fortune Sunlite 1L' for ₹145 (350m away). Balaji Traders has 'Gemini Oil 1L' for ₹142 (1.1km away)."
       );
     } else if (lower.includes("sugar")) {
       setAiAnswer(
-        "⚠️ Alert: Rajesh Kirana has 'Madhur Sugar 1kg' at ₹46, but only 3 packs are left in stock! Reserve now to avoid missing out."
+        "Alert: Rajesh Kirana has 'Madhur Sugar 1kg' at ₹46, but only 3 packs are left in stock! Reserve now to avoid missing out."
       );
     } else {
       setAiAnswer(
-        `🛍️ Customer Copilot: Searching neighborhood stores around ${session.location || "Indiranagar"} for "${q}". Found relevant matches nearby with verified stock.`
+        `Customer Copilot: Searching neighborhood stores around ${session.location || "Indiranagar"} for "${q}". Found relevant matches nearby with verified stock.`
       );
     }
   };
@@ -207,7 +208,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   };
 
   const handleReserveItem = (product: LocalStoreListing) => {
-    alert(`✅ Reservation confirmed at ${product.storeName}!\n1 unit of "${product.name}" held for you. Pickup anytime today.`);
+    alert(`Reservation confirmed at ${product.storeName}!\n1 unit of "${product.name}" held for you. Pickup anytime today.`);
   };
 
   const cartTotal = cartItems.reduce(
@@ -232,7 +233,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
             <div>
               <h2 className="portal-store-name">Karobaar Hyperlocal</h2>
               <span className="portal-store-meta">
-                📍 {session.location || "Indiranagar, Bengaluru"} • Welcome, <strong>{session.name}</strong>
+                <Icon name="pin" size={13} strokeWidth={1.8} /> {session.location || "Indiranagar, Bengaluru"} • Welcome, <strong>{session.name}</strong>
               </span>
             </div>
           </div>
@@ -243,7 +244,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               className="btn-cart-toggle"
               onClick={() => setShowCartDrawer(true)}
             >
-              🛒 Cart ({cartItems.reduce((acc, i) => acc + i.qty, 0)}) • ₹{cartTotal}
+              <Icon name="cart" size={14} strokeWidth={1.8} /> Cart ({cartItems.reduce((acc, i) => acc + i.qty, 0)}) • ₹{cartTotal}
             </button>
 
             <button
@@ -252,7 +253,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               onClick={onLogout}
               title="Switch to Merchant Portal or Logout"
             >
-              🚪 Switch Portal / Logout
+              <Icon name="logout" size={14} strokeWidth={1.8} /> Switch Portal / Logout
             </button>
           </div>
         </div>
@@ -264,7 +265,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
         <section className="portal-card customer-ai-hero">
           <div className="card-top-bar">
             <div>
-              <h3 className="card-heading">🎙️ Voice-First Hyperlocal AI Shopper</h3>
+              <h3 className="card-heading"><Icon name="mic" size={16} strokeWidth={1.8} /> Voice-First Hyperlocal AI Shopper</h3>
               <p className="card-subheading">Ask for items, compare nearby dukaan prices, and verify live stock</p>
             </div>
             <span className="badge-ai-online">Nearby Kiranas Synced</span>
@@ -313,7 +314,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
 
           <div className="copilot-output-card customer-output">
             <div className="output-card-header">
-              <span>🛍️ AI Smart Recommendation</span>
+              <span><Icon name="bag" size={14} strokeWidth={1.8} /> AI Smart Recommendation</span>
               <span className="tag-best-price">Best Value Highlight</span>
             </div>
             <pre className="copilot-text">{aiAnswer}</pre>
@@ -324,7 +325,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
         <section className="portal-card catalog-section">
           <div className="catalog-search-header">
             <div>
-              <h3 className="card-heading">🏪 Neighborhood Store Listings & Price Comparison</h3>
+              <h3 className="card-heading"><Icon name="store" size={16} strokeWidth={1.8} /> Neighborhood Store Listings & Price Comparison</h3>
               <p className="card-subheading">Compare genuine rates across neighborhood kirana shops</p>
             </div>
 
@@ -362,8 +363,8 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               filteredProducts.map((prod) => (
                 <div key={prod.id} className="customer-product-card">
                   <div className="card-badge-row">
-                    <span className="store-distance-badge">📍 {prod.distance}</span>
-                    <span className="rating-badge">★ {prod.rating}</span>
+                    <span className="store-distance-badge"><Icon name="pin" size={11} strokeWidth={1.8} /> {prod.distance}</span>
+                    <span className="rating-badge"><Icon name="star" size={11} strokeWidth={2} /> {prod.rating}</span>
                   </div>
 
                   <h4 className="prod-title">{prod.name}</h4>
@@ -409,13 +410,13 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 className="btn-close-drawer"
                 onClick={() => setShowCartDrawer(false)}
               >
-                ✕
+                <Icon name="x" size={18} strokeWidth={1.8} />
               </button>
             </div>
 
             {orderSuccess ? (
               <div className="order-success-banner">
-                <div className="success-icon">🎉</div>
+                <div className="success-icon"><Icon name="sparkle" size={42} strokeWidth={1.4} /></div>
                 <h4>Order Placed Successfully!</h4>
                 <p>Tracking ID: <strong>{orderSuccess}</strong></p>
                 <p className="success-meta">
